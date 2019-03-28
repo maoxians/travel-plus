@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>searchPage</title>
+    <style>
+    @import "styles/searchPage.css";
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+    <div id="floating-panel">
+        <input id="address" type="textbox" placeholder="Enter an location">
+        <input id="search" type="button" value="Search">
+    </div>
+
+    <div id="right-panel">
+        <div>
+            <b>Start Point:</b>
+            <input id="start" type="textbox" value="">
+            <input id="StartButton" type="button" value="Start Here">
+            <br>
+            <b>Points of Interests:</b> <br>
+            <select multiple id="waypoints">
+            </select>
+            <br>
+            <b>End Point:</b>
+            <input id="destination" type="textbox" value="">
+            <input id="EndButton" type="button" value="End Here">
+            <br>
+            <input type="submit" id="submit">
+        </div>
+        <div id="directions-panel">Suggestted Routes</div>
+    </div>
+    <script src = "components/searchPage.js">
+    </script>
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC1i7VPyiFCK81ykkSyLjediMVocDYgSE8&callback=initMap">
+    </script>
+</body>
+
+</html>
