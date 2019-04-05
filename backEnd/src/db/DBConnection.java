@@ -5,22 +5,23 @@ import java.util.Set;
 
 //import org.json.JSONArray;
 //import org.json.JSONException;
-import org.json.JSONObject;
+//import org.json.JSONObject;
 
 import entity.Point;
-//import entity.Route;
+import entity.Route;
 
 /**
-* setRoute(String userId, String routeId) //insert a new route for user; or update a existing route
-*  -- savePoint(Point point) // save point to table point_of_interesting
-* getRoutes(String userId) //get routes by user
-* unsetRoutes(String userId, List<String> routeIds)  //remove a route
-* getRoutePoints(String userId, String routeId) //get PoI of a route
+* void setRoute(String userId, String routeId) //insert a new route for user; or update an existing route
+*  -- void setPoint(Point point) // save point to table point_of_interesting; or update (increase only) visit_freq for an existing route
+* List<JSONObject> getRoutes(String userId) //get routes by user, return the most recent 5 routes, by last_update_time 
+*  -- Set<JSONObject> getPoints (List<String> pointIds) // get points by pointId
+* unsetRoutes(String userId, List<String> routeIds)  //remove a route; but won't change poi
 * Set<String> getCategories(String pointId) //get category of a PoI
-* List<JSONObject> searchPoI(String userId) // search PoI
+* List<JSONObject> searchPoI() // query PoI for top 10 most frequently visited points
+* 
 * String getFullname(String userId) 
 * boolean registerUser(String userId, String password, String firstname, String lastname)
-* 
+* public boolean verifyLogin(String userId, String password)
 */
 public interface DBConnection {
 	/**
@@ -34,33 +35,40 @@ public interface DBConnection {
 	 * @param userId
 	 * @param routeIds
 	 */
-	public void setRoute(String userId, String RouteId);
+	public boolean setRoute(Route route);
 
 	/**
-	 * Delete the route for a user.
+	 * Delete one route for a user.
 	 * 
 	 * @param userId
 	 * @param routeId
 	 */
+	public void unsetRoute(String userId, String routeId);
+	
+	/**
+	 * Delete several routes for a user.
+	 * 
+	 * @param userId
+	 * @param routeIds
+	 */
 	public void unsetRoutes(String userId, List<String> routeIds);
+	
+	/**
+	 * Delete all routes for a user.
+	 * 
+	 * @param userId
+	 */
+	public void unsetRoutes(String userId);
 
 	/**
 	 * Get the favorite item id for a user.
 	 * 
 	 * @param userId
 	 * @return itemIds
-	 
-	public Set<String> getFavoriteItemIds(String userId);
-	*/
-
-	/**
-	 * Gets routes based on user id
-	 * 
-	 * @param userId
-	 * @return set of routes JSONObject
-	 */
-	public Set<JSONObject> getRoutes(String userId);
+	*/ 
+	public Set<Route> getRoutes(String userId);
 	
+
 	/**
 	 * Gets categories based on item id
 	 * 
@@ -70,22 +78,51 @@ public interface DBConnection {
 	public Set<String> getCategories(String pointId);
 
 	/**
-	 * Search points of interest for a user (optional). If user is null, 
-	 * the first 10 points with higher visiting frequency return. 
+	 * Search points of interest. the first 10 points with higher visiting frequency return. 
 	 * 
 	 * @param userId
 	 * 
 	 * @return list of points
 	 */
-	public List<JSONObject> searchPoI(String userId);
+	public List<Point> searchPoI(int numOfPoints);
 
 	/**
-	 * Save point into db poi table.
+	 * Save point into points_of_interest table.
 	 * 
 	 * @param point
 	 */
-	public void savePoint(Point point);
+	public void setPoint(Point point);
+	
+	/**
+	 * Save points into points_of_interest table.
+	 * 
+	 * @param points
+	 */
+	public void setPoints(List<Point> points);
 
+	/**
+	 * Get the route ids for a user.
+	 * 
+	 * @param userId
+	 * @return RouteIds
+	 */
+	public Set<String> getRouteIds(String userId);
+	
+	/**
+	 * Get the point id for a route.
+	 * 
+	 * @param routeId
+	 * @return pointIds
+	 */
+	public List<String> getPointIds(String routeId, String userId);
+
+	/**
+	 * Get point from points_of_interest table by pointIds.
+	 * 
+	 * @param point
+	 */
+	public List<Point> getRoutePoints (String routeId, String userId);
+	
 	/**
 	 * Get full name of a user. (This is not needed for main course, just for demo
 	 * and extension).

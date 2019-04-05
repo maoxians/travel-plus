@@ -1,5 +1,5 @@
 package entity;
-import java.util.Set;
+import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -8,7 +8,7 @@ import org.json.JSONObject;
 public class Route {
 	private String routeId; //id of a route
 	private String userId;
-	private Set<JSONObject> routePoints;
+	private List<Point> routePoints;
 	
 	/**
 	 * This is a builder pattern in Java.
@@ -25,7 +25,7 @@ public class Route {
 	public String getUserId() {
 		return userId;
 	}
-	public Set<JSONObject> getCategories() {
+	public List<Point> getPoints() {
 		return routePoints;
 	}
 
@@ -44,7 +44,7 @@ public class Route {
 public static class RouteBuilder{
 	private String routeId;
 	private String userId;
-	private Set<JSONObject> routePoints;
+	private List<Point> routePoints;
 	
 	public void setRouteId(String routeId) {
 		this.routeId = routeId;
@@ -52,7 +52,7 @@ public static class RouteBuilder{
 	public void setUserId(String userId) {
 		this.userId = userId;
 	}
-	public void setRoutePoints(Set<JSONObject> routePoints) {
+	public void setRoutePoints(List<Point> routePoints) {
 		this.routePoints = routePoints;
 	}
 	
