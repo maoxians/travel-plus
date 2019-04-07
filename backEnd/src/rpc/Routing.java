@@ -107,7 +107,7 @@ private List<Point> getPointList(JSONArray points) throws JSONException {
 		}
 		
 		builder.setCategories(getCategories(point));
-		builder.setVisitFreq(0);
+		builder.setVisitFreq(1);
 		
 		pointList.add(builder.build());
 	}

@@ -1,6 +1,7 @@
 package db.mysql;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -20,6 +21,16 @@ import entity.Route.RouteBuilder;
 public class MySQLConnection implements DBConnection {
 
 	private Connection conn;
+	
+	public MySQLConnection() {
+	  	 try {
+	  		 Class.forName("com.mysql.cj.jdbc.Driver").getConstructor().newInstance();
+	  		 conn = DriverManager.getConnection(MySQLDBUtil.URL);
+	  		
+	  	 } catch (Exception e) {
+	  		 e.printStackTrace();
+	  	 }
+	   }
 	
 	@Override
 	public void close() {
@@ -45,14 +56,15 @@ public class MySQLConnection implements DBConnection {
         }
                 
 		try {
-			String sql = "INSERT IGNORE INTO routes(last_update_time, user_id, point_id, point_order) "
-					+ "VALUES (CURRENT_TIMESTAMP(), ?, ?, ?)";
+			String sql = "INSERT IGNORE INTO routes(last_update_time, user_id, route_id, num_of_points, point_id, point_order) "
+					+ "VALUES (CURRENT_TIMESTAMP(), ?, ?, ?, ?, ?)";
 			PreparedStatement ps = conn.prepareStatement(sql);
 			ps.setString(1, route.getUserId());
-			//ps.setTimestamp(4, NOW());
+			ps.setString(2, route.getRouteId());
+			ps.setInt(3, route.getPoints().size());
 			for (Point point : route.getPoints()) {
-				 ps.setString(2, point.getPointId());
-				 ps.setInt(3, point.getOrderInRoute());
+				 ps.setString(4, point.getPointId());
+				 ps.setInt(5, point.getOrderInRoute());
 				 ps.execute();
 			}
 			
@@ -81,11 +93,14 @@ public class MySQLConnection implements DBConnection {
 			ps.setString(1, routeId);
 			ps.setString(2, userId);
 			rs = ps.executeQuery();
-			count = rs.getInt(1);			
+			while(rs.next()){
+				count = rs.getInt("count(*)");
+		    }
+						
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return count == 1 ? true : false;	
+		return count >= 1 ? true : false;	
 	}
 
 	@Override
@@ -341,7 +356,9 @@ public class MySQLConnection implements DBConnection {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, point.getPointId());
 			rs = ps.executeQuery();
-			count = rs.getInt(1);			
+			while (rs.next()) {
+				count = rs.getInt("count(*)");
+			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
