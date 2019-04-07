@@ -142,7 +142,9 @@ function populateInfoWindow(marker, infowindow) {
   if (infowindow.marker != marker) {
     infowindow.marker = marker;
     infowindow.setContent('<div>' + marker.title + '</div>' + 
-                          '<button type="button" name="select" onclick="addToCandidate(this)" value = ' + marker.id + '>select</button>');
+                          '<button type="button" name="select" onclick="addToCandidate(this)" value = ' + marker.id + '>select</button>' + 
+                          '<button type="button" name="delete" onclick="delFromCandidate(this)" value = ' + marker.id + '>delete</button>'
+                          );
     infowindow.open(map, marker);
     infowindow.addListener('closeclick',function(){
       infowindow.setMarker = null;
@@ -171,8 +173,11 @@ function addToCandidate(input) {
             // <p>Category: Music</p>
             // <button type="button" name="remove-button"> remove </button>
             // </li>
+}
 
-
+function delFromCandidate(input) {
+  var inputid = input.value 
+  candidate = candidate.filter(marker => marker.id != inputid)
 }
 
 
