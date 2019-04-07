@@ -1,6 +1,6 @@
 // map related
 
-var current = [];
+var candidate = [];
 var nearby  = [];
 // set ==> 
 
@@ -128,13 +128,48 @@ function initMap() {
 function populateInfoWindow(marker, infowindow) {
   if (infowindow.marker != marker) {
     infowindow.marker = marker;
-    infowindow.setContent('<div>' + marker.title + '</div>');
+    infowindow.setContent('<div>' + marker.title + '</div>' + 
+                          '<button type="button" name="select" onclick="addToCandidate(this)" value = ' + marker.id + '>select</button>');
     infowindow.open(map, marker);
     infowindow.addListener('closeclick',function(){
       infowindow.setMarker = null;
     });
   }
 }
+
+
+function addToCandidate(input) {
+
+
+  var inputid = input.value 
+  var flag = false
+  for (var i = 0; i < candidate.length; i++) {
+    if (candidate[i].id == inputid) {
+      flag = true
+    }
+  }
+  if (!flag) {
+      candidate.push(markers.find(marker => marker.id == inputid))
+  }
+
+
+
+}
+
+
+function renderCandidate() {
+    var notebook = document.getElementById("notebook_ul");
+    var li = document.createElement("li");
+    li.setAttribute("class", "fas fa-map-marker");
+    
+            <li class="fas fa-map-marker">
+            <a href="">POI1</a>
+            <p>Category: Music</p>
+            <button type="button" name="remove-button"> remove </button>
+            </li>
+
+}
+
 
 
 function showListings() {
@@ -156,6 +191,9 @@ function deleListings() {
     hideListings()
     markers = [markers[0]]
 }
+
+
+
 
 // function addMarker(props) {
 //   // way to initialize markder
