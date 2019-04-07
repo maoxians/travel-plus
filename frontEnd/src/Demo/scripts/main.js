@@ -86,10 +86,10 @@ function initMap() {
     }
 
     // Clear out the old markers.
-    markers.forEach(function(marker) {
-      marker.setMap(null);
-    });
-    markers = [];
+    // markers.forEach(function(marker) {
+    //   marker.setMap(null);
+    // });
+    // markers = [];
 
     // For each place, get the icon, name and location.
     var bounds = new google.maps.LatLngBounds();
@@ -107,12 +107,17 @@ function initMap() {
       };
 
       // Create a marker for each place.
-      markers.push(new google.maps.Marker({
+      var marker = new google.maps.Marker({
         map: map,
         // icon: icon,
         title: place.name,
         position: place.geometry.location
-      }));
+      });
+      markers.push(marker);
+     marker.addListener('click', function() {
+       populateInfoWindow(this, largeInfowindow);
+     });
+      
 
       if (place.geometry.viewport) {
         // Only geocodes have viewport.
@@ -152,6 +157,12 @@ function addToCandidate(input) {
       candidate.push(markers.find(marker => marker.id == inputid))
   }
 
+    
+            // <li class="fas fa-map-marker">
+            // <a href="">POI1</a>
+            // <p>Category: Music</p>
+            // <button type="button" name="remove-button"> remove </button>
+            // </li>
 
 
 }
@@ -161,12 +172,6 @@ function renderCandidate() {
     var notebook = document.getElementById("notebook_ul");
     var li = document.createElement("li");
     li.setAttribute("class", "fas fa-map-marker");
-    
-            <li class="fas fa-map-marker">
-            <a href="">POI1</a>
-            <p>Category: Music</p>
-            <button type="button" name="remove-button"> remove </button>
-            </li>
 
 }
 
