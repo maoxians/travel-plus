@@ -9,6 +9,21 @@ var map;
 
 var markers = [];
 
+
+
+  var locations = [
+  {title: 'Victoria Peak',    location: {lat: 22.2758835,       lng: 114.145532   }},
+  {title: 'Disney Land',      location: {lat: 22.308393,        lng: 114.043959   }},
+  {title: 'Little Hong Kong', location: {lat: 22.2466607,       lng: 114.1757239  }},
+  {title: 'Tsim Sha Tsui',    location: {lat: 22.3034899,       lng: 114.1771279  }},
+  {title: 'victoria harbour', location: {lat: 22.279485,        lng: 114.164823   }},
+  {title: 'Tian Tan Buddha',  location: {lat: 22.2539847,       lng: 113.904984   }},
+  {title: 'Lantau Island',    location: {lat: 22.3476034,       lng: 114.0583373  }},
+  {title: 'Central',          location: {lat: 22.2890069,       lng: 114.1689992  }},
+  {title: 'Ngong Ping 360',   location: {lat: 22.2563163,       lng: 113.9014163  }},
+  {title: 'The Peak Tram',    location: {lat: 22.2776827,       lng: 114.1591909  }}
+  ];
+
 function initMap() {
 
 
@@ -30,18 +45,6 @@ function initMap() {
     var largeInfowindow = new google.maps.InfoWindow();
     var bounds = new google.maps.LatLngBounds();
 
-  var locations = [
-  {title: 'Victoria Peak',    location: {lat: 22.2758835,       lng: 114.145532   }},
-  {title: 'Disney Land',      location: {lat: 22.308393,        lng: 114.043959   }},
-  {title: 'Little Hong Kong', location: {lat: 22.2466607,       lng: 114.1757239  }},
-  {title: 'Tsim Sha Tsui',    location: {lat: 22.3034899,       lng: 114.1771279  }},
-  {title: 'victoria harbour', location: {lat: 22.279485,        lng: 114.164823   }},
-  {title: 'Tian Tan Buddha',  location: {lat: 22.2539847,       lng: 113.904984   }},
-  {title: 'Lantau Island',    location: {lat: 22.3476034,       lng: 114.0583373  }},
-  {title: 'Central',          location: {lat: 22.2890069,       lng: 114.1689992  }},
-  {title: 'Ngong Ping 360',   location: {lat: 22.2563163,       lng: 113.9014163  }},
-  {title: 'The Peak Tram',    location: {lat: 22.2776827,       lng: 114.1591909  }}
-  ];
    for (var i = 0; i < locations.length; i++) {
      // Get the position from the location array.
      var position = locations[i].location;
@@ -106,12 +109,13 @@ function initMap() {
         scaledSize: new google.maps.Size(25, 25)
       };
 
+      var preId = markers[markers.length - 1].id
 
       var marker = new google.maps.Marker({
         map: map,
         title: place.name,
         position: place.geometry.location,
-        id: Math.floor(Math.random() * 10000)
+        id: preId+1
       });
       markers.push(marker);
 
@@ -183,10 +187,16 @@ function renderCandidate() {
 
 function showListings() {
   var bounds = new google.maps.LatLngBounds();
+
   for (var i = 0; i < markers.length; i++) {
     markers[i].setMap(map);
     bounds.extend(markers[i].position);
   }
+
+  for (var i = 0; i < locations.length; i++) {
+    bounds.extend(locations[i].location);
+  }
+
   map.fitBounds(bounds);
 }
 
@@ -198,7 +208,7 @@ function hideListings() {
 
 function deleListings() {
     hideListings()
-    markers = [markers[0]]
+    markers = []
 }
 
 
