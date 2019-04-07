@@ -106,18 +106,22 @@ function initMap() {
         scaledSize: new google.maps.Size(25, 25)
       };
 
-      // Create a marker for each place.
+
       var marker = new google.maps.Marker({
         map: map,
-        // icon: icon,
         title: place.name,
-        position: place.geometry.location
+        position: place.geometry.location,
+        id: Math.floor(Math.random() * 10000)
       });
       markers.push(marker);
+
+
      marker.addListener('click', function() {
        populateInfoWindow(this, largeInfowindow);
      });
-      
+
+
+
 
       if (place.geometry.viewport) {
         // Only geocodes have viewport.
