@@ -1,46 +1,72 @@
 // map related
 
 var current = [];
-current.apppend();
 var nearby  = [];
 // set ==> 
 
 
 var map;
+
+var markers = [];
+
 function initMap() {
+
+
+
   map = new google.maps.Map(document.getElementById('map'), {
     center: {lat: 22.28, lng: 114.16},
     zoom:14,
     mapTypeControl: false,
     fullscreenControl: false
   });
-  // listener for click to add markder
-  // google.maps.event.addListener(map, 'click',
-  // function(event){
-  //   addMarker({coords: event.latLng});
-  // });
-//   var marker = new google.maps.Marker({
-//     position: {lat: 22.28, lng: 114.16},
-//     map: map,
-//     // icon: 'http://maps.google.com/mapfiles/kml/pal3/icon0.png'
-//   });
-//
-//   var infoWindow = new google.maps.InfoWindow({
-//     content: '<h1> Hahah </h1>'
-//   });
-//
-//   marker.addListener('click', function() {
-//     infoWindow.open(map, marker);
-//   });
-// Add Marker function
-addMarker({coords:{lat: 22.28, lng: 114.16}, iconImage:'http://maps.google.com/mapfiles/kml/pal3/icon0.png', content:'hhhh'});
-addMarker({coords:{lat: 22.28, lng: 114.14}});
-addMarker({coords:{lat: 22.283001, lng: 114.137085}});
 
+    // addMarker({coords:{lat: 22.28, lng: 114.16}, 
+    // iconImage:'http://maps.google.com/mapfiles/kml/pal3/icon0.png', content:'hhhh'});
+    // addMarker({coords:{lat: 22.28, lng: 114.14}});
+    // addMarker({coords:{lat: 22.283001, lng: 114.137085}});
 
+    // var defaultIcon = makeMarkerIcon('0091ff');
+    // var highlightedIcon = makeMarkerIcon('FFFF24');
+    var largeInfowindow = new google.maps.InfoWindow();
+    var bounds = new google.maps.LatLngBounds();
 
+  var locations = [
+  {title: 'Victoria Peak',    location: {lat: 22.2758835,       lng: 114.145532   }},
+  {title: 'Disney Land',      location: {lat: 22.308393,        lng: 114.043959   }},
+  {title: 'Little Hong Kong', location: {lat: 22.2466607,       lng: 114.1757239  }},
+  {title: 'Tsim Sha Tsui',    location: {lat: 22.3034899,       lng: 114.1771279  }},
+  {title: 'victoria harbour', location: {lat: 22.279485,        lng: 114.164823   }},
+  {title: 'Tian Tan Buddha',  location: {lat: 22.2539847,       lng: 113.904984   }},
+  {title: 'Lantau Island',    location: {lat: 22.3476034,       lng: 114.0583373  }},
+  {title: 'Central',          location: {lat: 22.2890069,       lng: 114.1689992  }},
+  {title: 'Ngong Ping 360',   location: {lat: 22.2563163,       lng: 113.9014163  }},
+  {title: 'The Peak Tram',    location: {lat: 22.2776827,       lng: 114.1591909  }}
+  ];
+   for (var i = 0; i < locations.length; i++) {
+     // Get the position from the location array.
+     var position = locations[i].location;
+     var title = locations[i].title;
+     // Create a marker per location, and put into markers array.
+     var marker = new google.maps.Marker({
+       map: map,
+       position: position,
+       title: title,
+       animation: google.maps.Animation.DROP,
+       id: i
+     });
+     // Push the marker to our array of markers.
+     markers.push(marker);
+     // Create an onclick event to open an infowindow at each marker.
+     marker.addListener('click', function() {
+       populateInfoWindow(this, largeInfowindow);
+     });
+     bounds.extend(markers[i].position);
+   }
 
-// search bar
+   document.getElementById("show-listings").addEventListener('click', showListings);
+   document.getElementById("hide-listings").addEventListener('click', hideListings);
+   document.getElementById("dele-listings").addEventListener('click', deleListings);
+  // search bar
   var input = document.getElementById('search');
   var searchBox = new google.maps.places.SearchBox(input);
   // map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
@@ -50,7 +76,6 @@ addMarker({coords:{lat: 22.283001, lng: 114.137085}});
     searchBox.setBounds(map.getBounds());
   });
 
-  var markers = [];
   // Listen for the event fired when the user selects a prediction and retrieve
   // more details for that place.
   searchBox.addListener('places_changed', function() {
@@ -97,53 +122,80 @@ addMarker({coords:{lat: 22.283001, lng: 114.137085}});
       }
     });
     map.fitBounds(bounds);
-  });
+  });  
 }
 
-
-function addMarker(props) {
-  // way to initialize markder
-    var marker = new google.maps.Marker({
-      position: props.coords,
-      map: map,
-      // icon: 'http://maps.google.com/mapfiles/kml/pal3/icon0.png'
+function populateInfoWindow(marker, infowindow) {
+  if (infowindow.marker != marker) {
+    infowindow.marker = marker;
+    infowindow.setContent('<div>' + marker.title + '</div>');
+    infowindow.open(map, marker);
+    infowindow.addListener('closeclick',function(){
+      infowindow.setMarker = null;
     });
-    if (props.iconImage){
-      marker.setIcon(props.iconImage);
-    }
-
-    if(props.content){
-      var infoWindow = new google.maps.InfoWindow ({
-        content:props.content
-      })
-
-      marker.addListener('click', function() {
-        infoWindow.open(map, marker);
-      });
-    }
+  }
 }
+
+
+function showListings() {
+  var bounds = new google.maps.LatLngBounds();
+  for (var i = 0; i < markers.length; i++) {
+    markers[i].setMap(map);
+    bounds.extend(markers[i].position);
+  }
+  map.fitBounds(bounds);
+}
+
+function hideListings() {
+  for (var i = 0; i < markers.length; i++) {
+    markers[i].setMap(null);
+  }
+}
+
+function deleListings() {
+    hideListings()
+    markers = [markers[0]]
+}
+
+// function addMarker(props) {
+//   // way to initialize markder
+//     var marker = new google.maps.Marker({
+//       position: props.coords,
+//       map: map,
+//       // icon: 'http://maps.google.com/mapfiles/kml/pal3/icon0.png'
+//     });
+//     if (props.iconImage){
+//       marker.setIcon(props.iconImage);
+//     }
+
+//     if(props.content){
+//       var infoWindow = new google.maps.InfoWindow ({
+//         content:props.content
+//       })
+
+//       marker.addListener('click', function() {
+//         infoWindow.open(map, marker);
+//       });
+//     }
+// }
 
 // page realted
 
 
 
-function init() {
-
-}
 
 
 
+// function hideElement(element) {
+//   element.style.display = 'none';
+// }
 
-function hideElement(element) {
-  element.style.display = 'none';
-}
+// // Create item list
 
-// Create item list
-
-function listItems(items) {
-  var itemList = document.querySelector("item-list");
-  itemList.innerHTML = '';
-  for (var i = 0; i < items.length; i++) {
-    addItem(itemList, items[i]);
-  }
-}
+// function listItems(items) {
+//   var itemList = document.querySelector("item-list");
+//   itemList.innerHTML = '';
+//   for (var i = 0; i < items.length; i++) {
+//     addItem(itemList, items[i]);
+//   }
+// }
