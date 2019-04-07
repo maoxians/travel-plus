@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * Servlet implementation class Register
  */
-@WebServlet("/register")
+@WebServlet("/register")  // endpoint
 public class Register extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
@@ -27,6 +27,27 @@ public class Register extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
+		DBConnection connection = DBConnectionFactory.getConnection();
+		try {
+			JSONObject input = RpcHelper.readJSONObject(request);
+			String userId = input.getString("user_id");
+			String password = input.getString("password");
+			String firstname = input.getString("first_name");
+			String lastname = input.getString("last_name");
+			
+			JSONObject obj = new JSONObject(); // helps to identify success or failure
+			if (connection.registerUser(userId, password, firstname, lastname)) {
+				obj.put("status", "OK");
+			} else {
+				obj.put("status", "User Already Exists");
+			}
+			RpcHelper.writeJsonObject(response, obj);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			connection.close();
+		}
+
 	}
 
 }

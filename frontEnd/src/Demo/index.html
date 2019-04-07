@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Travel plus</title>
+  <link rel="stylesheet" href="styles/style.css">
+  <link rel="stylesheet" href="styles/menu.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css?family=Allerta+Stencil" rel="stylesheet">
+  <link rel="stylesheet" href="styles/list.css">
+  <link rel="stylesheet" href="styles/login.css">
+
+</head>
+<body>
+  <!-- <header>
+    <nav>
+      <a href="">Plan</a>
+      <a href="">History</a>
+      <a href="">Top</a>
+      <span>Done Joe</span>
+      <a href="">Logout</a>
+      <img src="" alt="avatar">
+    </nav>
+  </header> -->
+  <!-- <h1>HongKong Wondering</h1> -->
+
+  <nav>
+
+    <ul id="menu">
+      <li title="home"><a href="#" class="home active">home</a></li>
+      <li title="start"><a href="#" class="start">search</a></li>
+      <li title="nearby"><a href="#" class="nearby">nearby</a></li>
+      <li title="recommend"><a href="#" class="recommend">recommend</a></li>
+
+      <li title="history"><a href="#" class="history">history</a></li>
+      <li title="John"><a href="#" class="user">user</a></li>
+      <li title="signout"><a href="#" class="signout">sign out</a></li>
+    </ul>
+  </nav>
+
+  <div id="container">
+    <div id="current">
+      <input id="search" class="control" type="text" placeholder="Search...">
+
+      <ul id="notebook_ul">
+        <li class="fas fa-map-marker">
+            <a href="">POI1</a>
+            <p>Category: Music</p>
+            <button type="button" name="remove-button"> remove </button>
+        </li>
+      </ul>
+
+      <div>
+          <input id="show-listings" type="button" value="Show Listings">
+          <input id="hide-listings" type="button" value="Hide Listings">
+          <input id="dele-listings" type="button" value="Delete Listings">
+      </div>
+
+    <button type="button" name="submit-button">submit</button>
+    </div>
+  </div>
+
+
+  <div id="map"> </div>
+  
+
+  <div id="list">
+
+    <div id="item-list" class="list">
+      <h2>current plan</h2>
+      <ul>
+        <li class="item">
+          <div>
+            <i class="fas fa-map-marker"></i>
+            <a href="">POI1</a>
+            <p>Category: Music</p>
+          </div>
+          <p>address 1 <br>
+            address 2
+          </p>
+          <i class="fas fa-trash-alt"></i>
+          <button type="button" name="button"> remove </button>
+        </li>
+        <br>
+        <li>
+          <div>
+            <i class="fas fa-map-marker"></i>
+            <a href="">POI1</a>
+            <p>Category: Music</p>
+          </div>
+          <p>address 1 <br>
+            address 2
+          </p>
+          <i class="fas fa-trash-alt"></i>
+          <button type="button" name="button"> remove </button>
+        </li>
+        <br>
+        <li>
+          <div>
+            <i class="fas fa-map-marker"></i>
+            <a href="">POI1</a>
+            <p>Category: Music</p>
+          </div>
+          <p>address 1 <br>
+            address 2
+          </p>
+          <i class="fas fa-trash-alt"></i>
+          <button type="button" name="button"> remove </button>
+        </li>
+      </ul>
+
+
+
+
+    </div>
+
+
+
+    <div id="list2" class="list">
+      <h2>history plan</h2>
+      <p>search bar</p>
+      <!-- <input id="search" class="control" type="text" placeholder="Search..."> -->
+    </div>
+    <div id="nearby" class="list">
+      <h2 >nearby</h2>
+      <ul>
+        <li>NB1
+          <button type="button" name="button"> add </button>
+  </li>
+        <li>NB1</li>
+      </ul>
+    </div>
+
+
+  </div>
+
+  <div class="login-page">
+    <div class="form">
+      <form class="register-form">
+        <input type="text" placeholder="name"/>
+        <input type="password" placeholder="password"/>
+        <input type="text" placeholder="email address"/>
+        <button>create</button>
+        <p class="message">Already registered? <a href="#">Sign In</a></p>
+      </form>
+      <form class="login-form">
+        <input type="text" placeholder="username"/>
+        <input type="password" placeholder="password"/>
+        <button>login</button>
+        <p class="message">Not registered? <a href="#">Create an account</a></p>
+      </form>
+    </div>
+  </div>
+
+
+  <script src="scripts/main.js"></script>
+  <scri src="scripts/login.js"></scri>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCWxyRxex2f7OtrXKMrr8xeSlzIq_niefE&libraries=places&callback=initMap"async defer></script>
+</body>
+</html>

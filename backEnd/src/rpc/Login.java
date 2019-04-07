@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * Servlet implementation class Login
  */
-@WebServlet("/login")
+@WebServlet("/login")  // endpoint
 public class Login extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
@@ -27,7 +27,25 @@ public class Login extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		response.getWriter().append("Served at: ").append(request.getContextPath());
+		DBConnection connection = DBConnectionFactory.getConnection();
+		try {
+			HttpSession session = request.getSession(false); // won't create session if not exists
+
+			JSONObject obj = new JSONObject();
+			if (session != null) {
+				String userId = session.getAttribute("user_id").toString();
+				obj.put("status", "OK").put("user_id", userId).put("name", connection.getFullname(userId));	// helps to identify success
+			} else {
+				response.setStatus(403); // understands the request but refuses to authorize it
+				obj.put("status", "Session Invalid");
+			}
+			RpcHelper.writeJsonObject(response, obj);
+			
+		} catch (JSONException e) {
+			e.printStackTrace();
+		} finally {
+			connection.close();
+		}
 	}
 
 	/**
@@ -35,7 +53,29 @@ public class Login extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		doGet(request, response);
+		DBConnection connection = DBConnectionFactory.getConnection();
+		try {
+			JSONObject input = RpcHelper.readJSONObject(request);
+			String userId = input.getString("user_id");
+			String password = input.getString("password");
+			
+			JSONObject obj = new JSONObject();
+			if (connection.verifyLogin(userId, password)) {
+				HttpSession session = request.getSession(); // returns associated session, or creates one; session_id saved in response header by default
+				session.setAttribute("user_id", userId);
+				session.setMaxInactiveInterval(600);
+				obj.put("status", "OK").put("user_id", userId).put("name", connection.getFullname(userId)); // helps to identify success
+			} else {
+				response.setStatus(401); // lacks valid authentication credentials
+				obj.put("status", "User Doesn't Exists");
+			}
+			RpcHelper.writeJsonObject(response, obj);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			connection.close();
+		}
 	}
 
 }

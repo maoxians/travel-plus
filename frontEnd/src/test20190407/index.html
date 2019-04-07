@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Simple Map</title>
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta charset="utf-8">
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      #controls {
+        position: absolute;
+        top: 10px;
+        left: 25%;
+        z-index: 5;
+        background-color: #fff;
+        padding: 5px;
+        border: 1px solid #999;
+        text-align: center;
+        font-family: 'Roboto','sans-serif';
+        line-height: 30px;
+        padding-left: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map" style="{position: absolute, top: 15px}"></div>
+    <div id="controls">
+      <h1>controls</h1>
+      <button id="more">More results</button>
+      <button id="nearby">nearby</button>
+      <button id="clear">clear</button>
+      <button id="start">start</button>
+
+      <button id="hide">hid</button>
+    </div>
+
+
+
+    <script src="scripts/main.js">
+
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCWxyRxex2f7OtrXKMrr8xeSlzIq_niefE&libraries=places&callback=initMap"
+    async defer></script>
+  </body>
+</html>
+
+<!-- types
+https://developers.google.com/places/supported_types -->
+
+
+
+
+<!-- // 拿到map
+var mapDiv = document.getElementById('map');
+// 调用需要两种形式，一种是LatLngBounds，一个正方形的区域
+// 另外一种是，传一个google 的 LatLng object + radius
+// 中点 -->
