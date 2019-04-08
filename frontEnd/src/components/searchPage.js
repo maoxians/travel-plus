@@ -43,6 +43,10 @@ function AutocompleteDirectionsHandler(map) {
     this.directionsService = new google.maps.DirectionsService;
     this.directionsDisplay = new google.maps.DirectionsRenderer;
     this.directionsDisplay.setMap(map);
+    var me = this;
+
+    var addButton = document.getElementById('add');
+    var Pois = document.getElementById('POIs');
 
     var originInput = document.getElementById('origin-input');
     var destinationInput = document.getElementById('destination-input');
@@ -51,7 +55,7 @@ function AutocompleteDirectionsHandler(map) {
 
     var originAutocomplete = new google.maps.places.Autocomplete(originInput);
     // Specify just the place data fields that you need.
-    originAutocomplete.setFields(['place_id','name']);
+    originAutocomplete.setFields(['place_id', 'name']);
 
     var destinationAutocomplete = new google.maps.places.Autocomplete(destinationInput);
     // Specify just the place data fields that you need.
@@ -73,6 +77,20 @@ function AutocompleteDirectionsHandler(map) {
         destinationInput);
     this.map.controls[google.maps.ControlPosition.TOP_LEFT].push(modeSelector);
 
+
+    addButton.addEventListener('click', function () {
+        window.alert('ADD button');
+        //window.alert(me.waypointsName);
+        Pois.innerHTML = me.waypointsName;
+
+        waypts.push({
+            location: {
+                'placeId': me.waypointsPlaceId
+            },
+            stopover: true
+        })
+    });
+
 }
 
 // Sets a listener on a ADD button to add pois.
@@ -82,35 +100,20 @@ AutocompleteDirectionsHandler.prototype.setupClickListener = function (
     id, mode) {
     var radioButton = document.getElementById(id);
     var me = this;
-    var addButton = document.getElementById('add');
-    var Pois = document.getElementById('POIs');
 
     radioButton.addEventListener('click', function () {
         me.travelMode = mode;
-        me.route();
     });
-    addButton.addEventListener('click', function () {
-        //window.alert('ADD button');
-        //window.alert(me.waypointsName);
-        Pois.innerHTML= me.waypointsName;
-        
-        waypts.push({
-            location: {
-                'placeId': me.waypointsPlaceId
-            },
-            stopover: true
-        })
-    });
-
 };
+
 
 AutocompleteDirectionsHandler.prototype.setupPlaceChangedListener = function (
     autocomplete, mode) {
     var me = this;
     var submitButton = document.getElementById('submit');
-    var originP= document.getElementById('SP');
-    var destinationP= document.getElementById('EP');
-    
+    var originP = document.getElementById('SP');
+    var destinationP = document.getElementById('EP');
+
     autocomplete.bindTo('bounds', this.map);
 
     autocomplete.addListener('place_changed', function () {
@@ -123,7 +126,7 @@ AutocompleteDirectionsHandler.prototype.setupPlaceChangedListener = function (
         if (mode === 'ORIG') {
             me.originPlaceId = place.place_id;
             originP.innerHTML = place.name;
-            
+
         } else if (mode === 'DEST') {
             me.destinationPlaceId = place.place_id;
             destinationP.innerHTML = place.name;
@@ -179,6 +182,6 @@ AutocompleteDirectionsHandler.prototype.route = function () {
             } else {
                 window.alert('Directions request failed due to ' + status);
             }
-            });
-        
+        });
+
 };
