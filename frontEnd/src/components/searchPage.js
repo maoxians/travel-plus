@@ -9,8 +9,8 @@ function initMap() {
         },
         zoom: 13
     });
-    var infowindow = new google.maps.InfoWindow();
-    var service = new google.maps.places.PlacesService(map);
+    //var infowindow = new google.maps.InfoWindow();
+    //var service = new google.maps.places.PlacesService(map);
 
     /* info box 
         TODO
@@ -51,15 +51,14 @@ function AutocompleteDirectionsHandler(map) {
 
     var originAutocomplete = new google.maps.places.Autocomplete(originInput);
     // Specify just the place data fields that you need.
-    originAutocomplete.setFields(['place_id']);
+    originAutocomplete.setFields(['place_id','name']);
 
-    var destinationAutocomplete =
-        new google.maps.places.Autocomplete(destinationInput);
+    var destinationAutocomplete = new google.maps.places.Autocomplete(destinationInput);
     // Specify just the place data fields that you need.
-    destinationAutocomplete.setFields(['place_id']);
+    destinationAutocomplete.setFields(['place_id', 'name'], );
 
     var waypointsAutocomplete = new google.maps.places.Autocomplete(waypointsInput);
-    waypointsAutocomplete.setFields(['place_id']);
+    waypointsAutocomplete.setFields(['place_id', 'name']);
 
     this.setupClickListener('changemode-walking', 'WALKING');
     this.setupClickListener('changemode-transit', 'TRANSIT');
@@ -84,6 +83,7 @@ AutocompleteDirectionsHandler.prototype.setupClickListener = function (
     var radioButton = document.getElementById(id);
     var me = this;
     var addButton = document.getElementById('add');
+    var Pois = document.getElementById('POIs');
 
     radioButton.addEventListener('click', function () {
         me.travelMode = mode;
@@ -91,6 +91,9 @@ AutocompleteDirectionsHandler.prototype.setupClickListener = function (
     });
     addButton.addEventListener('click', function () {
         //window.alert('ADD button');
+        //window.alert(me.waypointsName);
+        Pois.innerHTML= me.waypointsName;
+        
         waypts.push({
             location: {
                 'placeId': me.waypointsPlaceId
@@ -119,13 +122,14 @@ AutocompleteDirectionsHandler.prototype.setupPlaceChangedListener = function (
         }
         if (mode === 'ORIG') {
             me.originPlaceId = place.place_id;
-            originP.innerHTML = '123';
+            originP.innerHTML = place.name;
             
         } else if (mode === 'DEST') {
             me.destinationPlaceId = place.place_id;
-            destinationP.innerHTML = '';
+            destinationP.innerHTML = place.name;
         } else {
             me.waypointsPlaceId = place.place_id;
+            me.waypointsName = place.name;
             /*
             window.alert(me.waypointsPlaceId);
             waypts.push({
