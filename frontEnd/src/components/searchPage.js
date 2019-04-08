@@ -9,7 +9,26 @@ function initMap() {
         },
         zoom: 13
     });
+    var infowindow = new google.maps.InfoWindow();
+    var service = new google.maps.places.PlacesService(map);
 
+    /* info box 
+        TODO
+    service.getDetails(request, function (place, status) {
+        if (status === google.maps.places.PlacesServiceStatus.OK) {
+            var marker = new google.maps.Marker({
+                map: map,
+                position: place.geometry.location
+            });
+            google.maps.event.addListener(marker, 'click', function () {
+                infowindow.setContent('<div><strong>' + place.name + '</strong><br>' +
+                    'Place ID: ' + place.place_id + '<br>' +
+                    place.formatted_address + '</div>');
+                infowindow.open(map, this);
+            });
+        }
+    });
+*/
     new AutocompleteDirectionsHandler(map);
 }
 
@@ -86,6 +105,9 @@ AutocompleteDirectionsHandler.prototype.setupPlaceChangedListener = function (
     autocomplete, mode) {
     var me = this;
     var submitButton = document.getElementById('submit');
+    var originP= document.getElementById('SP');
+    var destinationP= document.getElementById('EP');
+    
     autocomplete.bindTo('bounds', this.map);
 
     autocomplete.addListener('place_changed', function () {
@@ -97,8 +119,11 @@ AutocompleteDirectionsHandler.prototype.setupPlaceChangedListener = function (
         }
         if (mode === 'ORIG') {
             me.originPlaceId = place.place_id;
+            originP.innerHTML = '123';
+            
         } else if (mode === 'DEST') {
             me.destinationPlaceId = place.place_id;
+            destinationP.innerHTML = '';
         } else {
             me.waypointsPlaceId = place.place_id;
             /*
@@ -135,8 +160,21 @@ AutocompleteDirectionsHandler.prototype.route = function () {
         function (response, status) {
             if (status === 'OK') {
                 me.directionsDisplay.setDirections(response);
+                var route = response.routes[0];
+                var summaryPanel = document.getElementById('directions-panel');
+                summaryPanel.innerHTML = '';
+                // For each route, display summary information.
+                for (var i = 0; i < route.legs.length; i++) {
+                    var routeSegment = i + 1;
+                    summaryPanel.innerHTML += '<b>Route Segment: ' + routeSegment +
+                        '</b><br>';
+                    summaryPanel.innerHTML += route.legs[i].start_address + ' to ';
+                    summaryPanel.innerHTML += route.legs[i].end_address + '<br>';
+                    summaryPanel.innerHTML += route.legs[i].distance.text + '<br><br>';
+                }
             } else {
                 window.alert('Directions request failed due to ' + status);
             }
-        });
+            });
+        
 };

@@ -37,12 +37,14 @@ body {
 
 #origin-input:focus,
 #destination-input:focus {
-    border-color: #4d90fe;
+    border-color: #1cbf92
+;
 }
 
 #mode-selector {
     color: #fff;
-    background-color: #4d90fe;
+    background-color:#1cbf92
+;
     margin-left: 12px;
     padding: 5px 11px 0px 11px;
 }
@@ -83,7 +85,7 @@ body {
 
 #directions-panel {
     margin-top: 10px;
-    background-color: rgb(119, 194, 255);
+    background-color: #1cbf92;
     padding: 10px;
     overflow: scroll;
     height: 500px;
