@@ -1,18 +1,32 @@
 var waypts = [];
 
 function initMap() {
+
+  var myStyles =[
+    {
+        featureType: "poi",
+        elementType: "labels",
+        stylers: [
+              { visibility: "off" }
+        ]
+    }
+];
+
     var map = new google.maps.Map(document.getElementById('map'), {
         mapTypeControl: false,
         center: {
             lat: 38.9072,
             lng: -77.0369
         },
-        zoom: 13
+        zoom: 13,
+        styles: myStyles
+
+
     });
     //var infowindow = new google.maps.InfoWindow();
     //var service = new google.maps.places.PlacesService(map);
 
-    /* info box 
+    /* info box
         TODO
     service.getDetails(request, function (place, status) {
         if (status === google.maps.places.PlacesServiceStatus.OK) {
@@ -37,13 +51,23 @@ function initMap() {
  */
 function AutocompleteDirectionsHandler(map) {
     this.map = map;
-    this.originPlaceId = null;
-    this.destinationPlaceId = null;
+    this.bounds = new google.maps.LatLngBounds();
+
+    this.originPlace = null;
+    this.destinationPlace = null;
+    this.waypointPlace = null;
+    this.startMarker = null;
+    this.endMarker = null;
+    this.waypointMarker = null;
     this.travelMode = 'WALKING';
     this.directionsService = new google.maps.DirectionsService;
     this.directionsDisplay = new google.maps.DirectionsRenderer;
     this.directionsDisplay.setMap(map);
     var me = this;
+
+    // console.log(map.getCenter().toString())
+
+    // me.waypointPlace(map.getCenter());
 
     var addButton = document.getElementById('add');
     var Pois = document.getElementById('POIs');
@@ -55,14 +79,14 @@ function AutocompleteDirectionsHandler(map) {
 
     var originAutocomplete = new google.maps.places.Autocomplete(originInput);
     // Specify just the place data fields that you need.
-    originAutocomplete.setFields(['place_id', 'name']);
+    originAutocomplete.setFields(['place_id', 'name', 'geometry', 'icon']);
 
     var destinationAutocomplete = new google.maps.places.Autocomplete(destinationInput);
     // Specify just the place data fields that you need.
-    destinationAutocomplete.setFields(['place_id', 'name'], );
+    destinationAutocomplete.setFields(['place_id', 'name', 'geometry', 'icon']);
 
     var waypointsAutocomplete = new google.maps.places.Autocomplete(waypointsInput);
-    waypointsAutocomplete.setFields(['place_id', 'name']);
+    waypointsAutocomplete.setFields(['place_id', 'name', 'geometry', 'icon']);
 
     this.setupClickListener('changemode-walking', 'WALKING');
     this.setupClickListener('changemode-transit', 'TRANSIT');
@@ -79,16 +103,38 @@ function AutocompleteDirectionsHandler(map) {
 
 
     addButton.addEventListener('click', function () {
-        window.alert('ADD button');
+        // window.alert('ADD button');
         //window.alert(me.waypointsName);
-        Pois.innerHTML = me.waypointsName;
+        var li = document.createElement('li');
+        li.textContent = me.waypointPlace.name
+        // Pois.innerHTML = me.waypointsName;
+        Pois.appendChild(li);
 
         waypts.push({
-            location: {
-                'placeId': me.waypointsPlaceId
-            },
+            location: me.waypointPlace.geometry.location,
             stopover: true
-        })
+        });
+
+        if (me.waypointMarker !== null) {
+          me.waypointMarker.setMap(null);
+        }
+        let map = me.map;
+        // let image = {
+        //   url: "https://www.flaticon.com/authors/prettycons",
+        //   size: new google.maps.Size(71, 71),
+        //   origin: new google.maps.Point(0, 0),
+        //   anchor: new google.maps.Point(17, 34),
+        //   scaledSize: new google.maps.Size(25, 25)
+        // }
+
+
+        me.waypointMarker = new google.maps.Marker({
+          map: map,
+          position: place.geometry.location,
+          title: place.name,
+          // icon: image
+          label: 'WP'
+        });
     });
 
 }
@@ -124,15 +170,62 @@ AutocompleteDirectionsHandler.prototype.setupPlaceChangedListener = function (
             return;
         }
         if (mode === 'ORIG') {
-            me.originPlaceId = place.place_id;
+            me.originPlace = place;
             originP.innerHTML = place.name;
+            if (me.startMarker !== null) {
+              me.startMarker.setMap(null);
+            }
+            let map = me.map;
+            // let image = {
+            //   url: "https://www.flaticon.com/authors/prettycons",
+            //   size: new google.maps.Size(71, 71),
+            //   origin: new google.maps.Point(0, 0),
+            //   anchor: new google.maps.Point(17, 34),
+            //   scaledSize: new google.maps.Size(25, 25)
+            // }
+
+
+            me.startMarker = new google.maps.Marker({
+              map: map,
+              position: place.geometry.location,
+              title: place.name,
+              // icon: image
+              label: 'Start'
+            });
 
         } else if (mode === 'DEST') {
-            me.destinationPlaceId = place.place_id;
+            me.destinationPlace = place
             destinationP.innerHTML = place.name;
+
+
+            if (me.endMarker !== null) {
+              me.endMarker.setMap(null);
+            }
+            let map = me.map;
+            // let image = {
+            //   url: "https://www.flaticon.com/authors/prettycons",
+            //   size: new google.maps.Size(71, 71),
+            //   origin: new google.maps.Point(0, 0),
+            //   anchor: new google.maps.Point(17, 34),
+            //   scaledSize: new google.maps.Size(25, 25)
+            // }
+
+
+            me.endMarker = new google.maps.Marker({
+              map: map,
+              position: place.geometry.location,
+              title: place.name,
+              // icon: image
+              label: 'DEST'
+            });
+
+
         } else {
-            me.waypointsPlaceId = place.place_id;
-            me.waypointsName = place.name;
+            me.waypointPlace = place;
+            me.addSingleMarker(me.waypointPlace);
+
+            me.addSingleMarker(place);
+
             /*
             window.alert(me.waypointsPlaceId);
             waypts.push({
@@ -148,24 +241,27 @@ AutocompleteDirectionsHandler.prototype.setupPlaceChangedListener = function (
 };
 
 AutocompleteDirectionsHandler.prototype.route = function () {
-    if (!this.originPlaceId || !this.destinationPlaceId) {
+    if (!this.originPlace || !this.destinationPlace) {
+        window.alert('start or destination not specified ' + status);
         return;
     }
     var me = this;
 
     this.directionsService.route({
-            origin: {
-                'placeId': this.originPlaceId
-            },
-            destination: {
-                'placeId': this.destinationPlaceId
-            },
+            origin: {'placeId': me.originPlace.place_id},
+            destination: {'placeId': me.destinationPlace.place_id},
             waypoints: waypts,
             optimizeWaypoints: true,
             travelMode: this.travelMode
         },
         function (response, status) {
             if (status === 'OK') {
+              // remote previous Marker
+              me.startMarker.setMap(null);
+              me.startMarker = null;
+              me.endMarker.setMap(null);
+              me.endMarker = null;
+
                 me.directionsDisplay.setDirections(response);
                 var route = response.routes[0];
                 var summaryPanel = document.getElementById('directions-panel');
@@ -185,3 +281,34 @@ AutocompleteDirectionsHandler.prototype.route = function () {
         });
 
 };
+
+AutocompleteDirectionsHandler.prototype.addSingleMarker = function (place) {
+  let me = this;
+  let map = me.map;
+  let image = {
+    url: place.icon,
+    size: new google.maps.Size(71, 71),
+    origin: new google.maps.Point(0, 0),
+    anchor: new google.maps.Point(17, 34),
+    scaledSize: new google.maps.Size(25, 25)
+  }
+
+  let marker = new google.maps.Marker({
+    map: map,
+    position: place.geometry.location,
+    title: place.name,
+    icon: image
+  });
+
+  var infowindow = new google.maps.InfoWindow();
+
+  google.maps.event.addListener(marker, 'click', function() {
+      infowindow.setContent(place.name + '\n' + marker.position);
+      // current_selected = marker.position;
+
+      infowindow.open(map, this);
+  });
+
+  bounds.extend(place.geometry.location);
+  // map.fitBounds(bounds);
+}
