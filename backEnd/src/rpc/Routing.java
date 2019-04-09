@@ -96,14 +96,14 @@ private List<Point> getPointList(JSONArray points) throws JSONException {
 		if (!point.isNull("lat")) {
 			builder.setLat(point.getDouble("lat"));
 		}
-		if (!point.isNull("lon")) {
-			builder.setLon(point.getDouble("lon"));
+		if (!point.isNull("lng")) {
+			builder.setLon(point.getDouble("lng"));
 		}
 		if (!point.isNull("step")) {
 			builder.setOrderInRoute(point.getInt("step"));
 		}
-		if (!point.isNull("addr")) {
-			builder.setAddress(point.getString("addr"));
+		if (!point.isNull("name")) {
+			builder.setAddress(point.getString("name"));
 		}
 		
 		builder.setCategories(getCategories(point));

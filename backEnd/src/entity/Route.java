@@ -34,7 +34,7 @@ public class Route {
 		try {
 			obj.put("route_id", routeId);
 			obj.put("user_id", userId);
-			obj.put("route_points", new JSONArray(routePoints));
+			obj.put("points", new JSONArray(routePoints));
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}

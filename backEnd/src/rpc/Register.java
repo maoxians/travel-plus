@@ -7,6 +7,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.json.JSONObject;
+
+import db.DBConnection;
+import db.DBConnectionFactory;
+
 /**
  * Servlet implementation class Register
  */
@@ -41,7 +46,7 @@ public class Register extends HttpServlet {
 			} else {
 				obj.put("status", "User Already Exists");
 			}
-			RpcHelper.writeJsonObject(response, obj);
+			RpcHelper.writeJSONObject(response, obj);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {

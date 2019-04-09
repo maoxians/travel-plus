@@ -56,6 +56,8 @@ public class MySQLConnection implements DBConnection {
         }
                 
 		try {
+			setPoints(route.getPoints());
+			
 			String sql = "INSERT IGNORE INTO routes(last_update_time, user_id, route_id, num_of_points, point_id, point_order) "
 					+ "VALUES (CURRENT_TIMESTAMP(), ?, ?, ?, ?, ?)";
 			PreparedStatement ps = conn.prepareStatement(sql);
@@ -67,9 +69,6 @@ public class MySQLConnection implements DBConnection {
 				 ps.setInt(5, point.getOrderInRoute());
 				 ps.execute();
 			}
-			
-			setPoints(route.getPoints());
-			
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
@@ -160,15 +159,19 @@ public class MySQLConnection implements DBConnection {
 	}
 
 	@Override
-	public Set<String> getRouteIds(String userId) {
+	public Set<String> getRouteIds(String userId, int numOfRoute) {
 		if (conn == null) {
 			return null;
 		}
 		Set<String> routeIds = new HashSet<>();
 		try {
-			String sql = "SELECT route_id FROM routes WHERE user_id = ? ";
+			String sql = "SELECT t.route_id FROM "
+					+ "(SELECT * FROM routes WHERE user_id = ? "
+					+ "ORDER BY last_update_time DESC) t "
+					+ "GROUP BY t.route_id LIMIT ?";
 			PreparedStatement statement = conn.prepareStatement(sql);
 			statement.setString(1, userId);
+			statement.setInt(2, numOfRoute);
 			ResultSet rs = statement.executeQuery();
 			while (rs.next()) {
 				String routeId = rs.getString("route_id");
@@ -187,9 +190,9 @@ public class MySQLConnection implements DBConnection {
 		}
 		List<String> pointIds = new ArrayList<>();
 		try {
-			String sql = "SELECT point_id FROM routes "
+			String sql = "SELECT point_id, point_order FROM routes "
 					+ "WHERE user_id = ? AND route_id = ? "
-					+ "GROUP BY point_order ";
+					+ "ORDER BY point_order ";
 			PreparedStatement statement = conn.prepareStatement(sql);
 			statement.setString(1, userId);
 			statement.setString(2, routeId);
@@ -205,32 +208,26 @@ public class MySQLConnection implements DBConnection {
 	}
 	
 	@Override
-	public Set<Route> getRoutes(String userId) {
+	public Set<Route> getRoutes(String userId, String numOfRoute) {
 		if (conn == null) {
 			return new HashSet<>();
 		}
 		
 		Set<Route> routes = new HashSet<>();
-		Set<String> routeIds = getRouteIds(userId);
+		
+		Set<String> routeIds = getRouteIds(userId, Integer.parseInt(numOfRoute));
 		
 		try {
-			String sql = "SELECT * FROM routes WHERE route_id = ?";
-			PreparedStatement ps = conn.prepareStatement(sql);
 			for (String routeId : routeIds) {
-				ps.setString(1, routeId);			
-				ResultSet rs = ps.executeQuery();
-				
 				RouteBuilder builder = new RouteBuilder();
 				
-				while (rs.next()) {
-					builder.setRouteId(rs.getString(routeId));
-					builder.setUserId(userId);
-					builder.setRoutePoints(getRoutePoints(routeId, userId));
+				builder.setRouteId(routeId);
+				builder.setUserId(userId);
+				builder.setRoutePoints(getRoutePoints(routeId, userId));
 								
-					routes.add(builder.build());
-				}
+				routes.add(builder.build());
 			}	
-			} catch (SQLException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 
@@ -249,10 +246,11 @@ public class MySQLConnection implements DBConnection {
 		try {
 			String sql = "SELECT * FROM points WHERE point_id = ?";
 			PreparedStatement ps = conn.prepareStatement(sql);
+			int pointOrder = 0;
 			for (String pointId : pointIds) {
 				ps.setString(1, pointId);			
 				ResultSet rs = ps.executeQuery();
-				int pointOrder = 0;
+				
 				PointBuilder builder = new PointBuilder();
 				
 				while (rs.next()) {
@@ -260,7 +258,7 @@ public class MySQLConnection implements DBConnection {
 					builder.setCategories(getCategories(pointId));
 					builder.setLat(rs.getDouble("lat"));
 					builder.setLon(rs.getDouble("lon"));
-					builder.setOrderInRoute(pointOrder ++);
+					builder.setOrderInRoute(++pointOrder);
 					builder.setPointId(pointId);
 					builder.setVisitFreq(rs.getInt("visit_freq"));
 					

@@ -52,13 +52,13 @@ public class Point {
 	public JSONObject toJSONObject() {
 		JSONObject obj = new JSONObject();
 		try {
-			obj.put("item_id", pointId);
+			obj.put("id", pointId);
 			obj.put("lat", lat);
-			obj.put("lon", lon);
-			obj.put("address", address);
-			obj.put("categories", new JSONArray(categories));
-			obj.put("visit_freq", visitFreq);
-			obj.put("order_in_route", orderInRoute);
+			obj.put("lng", lon);
+			obj.put("name", address);
+			obj.put("classifications", new JSONArray(categories));
+			obj.put("freq", visitFreq);
+			obj.put("step", orderInRoute);
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}

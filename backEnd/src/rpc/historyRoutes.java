@@ -1,14 +1,18 @@
 package rpc;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import db.DBConnection;
@@ -44,18 +48,26 @@ public class historyRoutes extends HttpServlet {
 		// optional
 		String userId = session.getAttribute("user_id").toString();
 		JSONArray array = new JSONArray();
-
+		
+		JSONObject input = RpcHelper.readJSONObject(request);
+		
 		DBConnection conn = DBConnectionFactory.getConnection();
 		try {
-			Set<JSONObject> routes = conn.getRoutes(userId);
-			for (JSONObject route : routes) {
-				JSONObject obj = route;
-				obj.append("favorite", true);
-				array.put(obj);
+			String numOfRoutes = input.getString("route_num");
+			if (numOfRoutes == null) {
+				numOfRoutes = "5";
 			}
-
-			RpcHelper.writeJsonArray(response, array);
-		} catch (JSONException e) {
+			Set<Route> routes = conn.getRoutes(userId, numOfRoutes);
+			if (routes.size() > 0) {
+				for (Route route : routes) {
+					JSONObject obj = route.toJSONObject();
+					array.put(obj);
+				}
+				RpcHelper.writeJasonArray(response, array);
+			} else {
+				RpcHelper.writeJSONObject(response, new JSONObject().put("history_plan", "N/A"));
+			}
+		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			conn.close();
@@ -65,6 +77,7 @@ public class historyRoutes extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
+	/*
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		// allow access only if session exists
@@ -92,7 +105,7 @@ public class historyRoutes extends HttpServlet {
 		} finally {
 			connection.close();
 		}
-	}
+	}*/
 
 	/**
 	 * @see HttpServlet#doDelete(HttpServletRequest, HttpServletResponse)
@@ -117,7 +130,7 @@ public class historyRoutes extends HttpServlet {
 				routeIds.add(array.getString(i));
 			}
 			connection.unsetRoutes(userId, routeIds);
-			RpcHelper.writeJsonObject(response, new JSONObject().put("result", "SUCCESS"));
+			RpcHelper.writeJSONObject(response, new JSONObject().put("result", "SUCCESS"));
 
 		} catch (Exception e) {
 			e.printStackTrace();

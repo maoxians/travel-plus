@@ -1,13 +1,20 @@
 package rpc;
 
 import java.io.IOException;
+import java.util.List;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import db.DBConnection;
+import db.DBConnectionFactory;
 import entity.Point;
 
 /**
@@ -36,13 +43,23 @@ public class pointsOfInterest extends HttpServlet {
 			return;
 		}
 
+		JSONObject input = RpcHelper.readJSONObject(request);
 		DBConnection connection = DBConnectionFactory.getConnection();
 
 		JSONArray array = new JSONArray();
 		try {
-			List<Point> points = connection.searchPoI(5);
-			for(Point point : points){
-				array.put(point.toJSONObject());
+			String numOfPoi = input.getString("poi_num");
+			if (numOfPoi == null) {
+				numOfPoi = "5";
+			}
+			List<Point> points = connection.searchPoI(Integer.parseInt(numOfPoi));
+			if (points.size() > 0) {
+				for(Point point : points){
+					array.put(point.toJSONObject());
+				}
+				RpcHelper.writeJasonArray(response, array);
+			} else {
+				RpcHelper.writeJSONObject(response, new JSONObject().put("poi", "N/A"));
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
