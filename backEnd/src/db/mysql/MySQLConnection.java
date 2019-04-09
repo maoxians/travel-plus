@@ -1,6 +1,7 @@
 package db.mysql;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -20,6 +21,16 @@ import entity.Route.RouteBuilder;
 public class MySQLConnection implements DBConnection {
 
 	private Connection conn;
+	
+	public MySQLConnection() {
+	  	 try {
+	  		 Class.forName("com.mysql.cj.jdbc.Driver").getConstructor().newInstance();
+	  		 conn = DriverManager.getConnection(MySQLDBUtil.URL);
+	  		
+	  	 } catch (Exception e) {
+	  		 e.printStackTrace();
+	  	 }
+	   }
 	
 	@Override
 	public void close() {
@@ -45,19 +56,19 @@ public class MySQLConnection implements DBConnection {
         }
                 
 		try {
-			String sql = "INSERT IGNORE INTO routes(last_update_time, user_id, point_id, point_order) "
-					+ "VALUES (CURRENT_TIMESTAMP(), ?, ?, ?)";
-			PreparedStatement ps = conn.prepareStatement(sql);
-			ps.setString(1, route.getUserId());
-			//ps.setTimestamp(4, NOW());
-			for (Point point : route.getPoints()) {
-				 ps.setString(2, point.getPointId());
-				 ps.setInt(3, point.getOrderInRoute());
-				 ps.execute();
-			}
-			
 			setPoints(route.getPoints());
 			
+			String sql = "INSERT IGNORE INTO routes(last_update_time, user_id, route_id, num_of_points, point_id, point_order) "
+					+ "VALUES (CURRENT_TIMESTAMP(), ?, ?, ?, ?, ?)";
+			PreparedStatement ps = conn.prepareStatement(sql);
+			ps.setString(1, route.getUserId());
+			ps.setString(2, route.getRouteId());
+			ps.setInt(3, route.getPoints().size());
+			for (Point point : route.getPoints()) {
+				 ps.setString(4, point.getPointId());
+				 ps.setInt(5, point.getOrderInRoute());
+				 ps.execute();
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
@@ -81,11 +92,14 @@ public class MySQLConnection implements DBConnection {
 			ps.setString(1, routeId);
 			ps.setString(2, userId);
 			rs = ps.executeQuery();
-			count = rs.getInt(1);			
+			while(rs.next()){
+				count = rs.getInt("count(*)");
+		    }
+						
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return count == 1 ? true : false;	
+		return count >= 1 ? true : false;	
 	}
 
 	@Override
@@ -145,15 +159,19 @@ public class MySQLConnection implements DBConnection {
 	}
 
 	@Override
-	public Set<String> getRouteIds(String userId) {
+	public Set<String> getRouteIds(String userId, int numOfRoute) {
 		if (conn == null) {
 			return null;
 		}
 		Set<String> routeIds = new HashSet<>();
 		try {
-			String sql = "SELECT route_id FROM routes WHERE user_id = ? ";
+			String sql = "SELECT t.route_id FROM "
+					+ "(SELECT * FROM routes WHERE user_id = ? "
+					+ "ORDER BY last_update_time DESC) t "
+					+ "GROUP BY t.route_id LIMIT ?";
 			PreparedStatement statement = conn.prepareStatement(sql);
 			statement.setString(1, userId);
+			statement.setInt(2, numOfRoute);
 			ResultSet rs = statement.executeQuery();
 			while (rs.next()) {
 				String routeId = rs.getString("route_id");
@@ -172,9 +190,9 @@ public class MySQLConnection implements DBConnection {
 		}
 		List<String> pointIds = new ArrayList<>();
 		try {
-			String sql = "SELECT point_id FROM routes "
+			String sql = "SELECT point_id, point_order FROM routes "
 					+ "WHERE user_id = ? AND route_id = ? "
-					+ "GROUP BY point_order ";
+					+ "ORDER BY point_order ";
 			PreparedStatement statement = conn.prepareStatement(sql);
 			statement.setString(1, userId);
 			statement.setString(2, routeId);
@@ -190,32 +208,26 @@ public class MySQLConnection implements DBConnection {
 	}
 	
 	@Override
-	public Set<Route> getRoutes(String userId) {
+	public Set<Route> getRoutes(String userId, String numOfRoute) {
 		if (conn == null) {
 			return new HashSet<>();
 		}
 		
 		Set<Route> routes = new HashSet<>();
-		Set<String> routeIds = getRouteIds(userId);
+		
+		Set<String> routeIds = getRouteIds(userId, Integer.parseInt(numOfRoute));
 		
 		try {
-			String sql = "SELECT * FROM routes WHERE route_id = ?";
-			PreparedStatement ps = conn.prepareStatement(sql);
 			for (String routeId : routeIds) {
-				ps.setString(1, routeId);			
-				ResultSet rs = ps.executeQuery();
-				
 				RouteBuilder builder = new RouteBuilder();
 				
-				while (rs.next()) {
-					builder.setRouteId(rs.getString(routeId));
-					builder.setUserId(userId);
-					builder.setRoutePoints(getRoutePoints(routeId, userId));
+				builder.setRouteId(routeId);
+				builder.setUserId(userId);
+				builder.setRoutePoints(getRoutePoints(routeId, userId));
 								
-					routes.add(builder.build());
-				}
+				routes.add(builder.build());
 			}	
-			} catch (SQLException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 
@@ -234,10 +246,11 @@ public class MySQLConnection implements DBConnection {
 		try {
 			String sql = "SELECT * FROM points WHERE point_id = ?";
 			PreparedStatement ps = conn.prepareStatement(sql);
+			int pointOrder = 0;
 			for (String pointId : pointIds) {
 				ps.setString(1, pointId);			
 				ResultSet rs = ps.executeQuery();
-				int pointOrder = 0;
+				
 				PointBuilder builder = new PointBuilder();
 				
 				while (rs.next()) {
@@ -245,7 +258,7 @@ public class MySQLConnection implements DBConnection {
 					builder.setCategories(getCategories(pointId));
 					builder.setLat(rs.getDouble("lat"));
 					builder.setLon(rs.getDouble("lon"));
-					builder.setOrderInRoute(pointOrder ++);
+					builder.setOrderInRoute(++pointOrder);
 					builder.setPointId(pointId);
 					builder.setVisitFreq(rs.getInt("visit_freq"));
 					
@@ -341,7 +354,9 @@ public class MySQLConnection implements DBConnection {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, point.getPointId());
 			rs = ps.executeQuery();
-			count = rs.getInt(1);			
+			while (rs.next()) {
+				count = rs.getInt("count(*)");
+			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

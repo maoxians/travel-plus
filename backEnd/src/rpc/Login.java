@@ -6,6 +6,13 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import db.DBConnection;
+import db.DBConnectionFactory;
 
 /**
  * Servlet implementation class Login
@@ -39,7 +46,7 @@ public class Login extends HttpServlet {
 				response.setStatus(403); // understands the request but refuses to authorize it
 				obj.put("status", "Session Invalid");
 			}
-			RpcHelper.writeJsonObject(response, obj);
+			RpcHelper.writeJSONObject(response, obj);
 			
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -69,7 +76,7 @@ public class Login extends HttpServlet {
 				response.setStatus(401); // lacks valid authentication credentials
 				obj.put("status", "User Doesn't Exists");
 			}
-			RpcHelper.writeJsonObject(response, obj);
+			RpcHelper.writeJSONObject(response, obj);
 
 		} catch (Exception e) {
 			e.printStackTrace();

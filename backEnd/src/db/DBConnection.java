@@ -66,7 +66,7 @@ public interface DBConnection {
 	 * @param userId
 	 * @return itemIds
 	*/ 
-	public Set<Route> getRoutes(String userId);
+	public Set<Route> getRoutes(String userId, String numOfRoute);
 	
 
 	/**
@@ -106,7 +106,7 @@ public interface DBConnection {
 	 * @param userId
 	 * @return RouteIds
 	 */
-	public Set<String> getRouteIds(String userId);
+	public Set<String> getRouteIds(String userId, int numOfRoute);
 	
 	/**
 	 * Get the point id for a route.
