@@ -97,16 +97,102 @@ ul {
   padding: 0;
   margin: 0;
   height: 271px;
-  width: 200px;
+  /* width: 200px; */
   overflow-y: scroll;
 }
-li {
-  background-color: #f1f1f1;
-  padding: 10px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
-}
+
+
 li:nth-child(odd) {
   background-color: #fcfcfc;
+}
+li {
+  list-style: none;
+  margin: 20px 0;
+  cursor: pointer;
+  border-left: 3px solid lightgray;
+  padding: 6px 9px;
+}
+span.text{
+  margin: auto;
+}
+span.btns,
+#add-list button{
+  background: #a4a4a4;
+  padding: 10px 20px;
+  color:#fff;
+  border: none;
+  transition: 0.4s ease-in-out;
+}
+span.btns:hover, #add-list button:hover {
+    background: white;
+    color: #000;
+    box-shadow: 0 0 10px 0 #fff;
+}
+span.btns{
+  float: right;
+}
+.search-boxs{
+  width: 100%;
+  position: relative
+}
+
+.searchTerm{
+  width: 100%;
+  border: 2px solid #a4a4a4;
+  padding: 6px;
+  height: 20px;
+  color: #a4a4a4;
+}
+#add-list{
+  display: flex;
+  padding: 3%;
+}
+.addlist{
+  padding: 9px;
+  border: 2px solid #bdbdbd;
+}
+.addWrap{
+  margin: auto;
+}
+.searchTerm:focus{
+  color: #a4a4a4;
+}
+ul{
+  padding: 0 20px;
+}
+.center{
+  text-align: center;
+}
+#search-boxs{
+  margin: 50px 20%;
+}
+
+
+
+/* tabs */
+
+#tabbed-content li{
+    display: inline-block;
+    padding: 10px 14px;
+    background: #ddd;
+    cursor: pointer;
+    border-left: none;
+    margin-bottom: 0;
+}
+
+#tabbed-content .panel{
+    display: none;
+    padding: 30px;
+    transition: all 0.6s ease-in-out;
+    margin-bottom: 0;
+}
+#tabbed-content .tabs{
+  margin-bottom: 0;
+}
+#tabbed-content .panel.active{
+    display: block;
+}
+#tabbed-content li.active, .panel.active {
+    background: red;
+    color: #fff;
 }

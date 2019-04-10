@@ -1,5 +1,5 @@
 var waypts = [];
-
+var map;
 function initMap() {
 
   var myStyles =[
@@ -12,7 +12,7 @@ function initMap() {
     }
 ];
 
-    var map = new google.maps.Map(document.getElementById('map'), {
+     map = new google.maps.Map(document.getElementById('map'), {
         mapTypeControl: false,
         center: {
             lat: 38.9072,
@@ -43,6 +43,12 @@ function initMap() {
         }
     });
 */
+    var marker = new google.maps.Marker({
+      map: map,
+      center: map.getCenter()
+    });
+
+    marker.addEventListener
     new AutocompleteDirectionsHandler(map);
 }
 
@@ -55,7 +61,7 @@ function AutocompleteDirectionsHandler(map) {
 
     this.originPlace = null;
     this.destinationPlace = null;
-    this.waypointPlace = null;
+    this.waypointPlace = null; // currently selected place
     this.startMarker = null;
     this.endMarker = null;
     this.waypointMarker = null;
@@ -68,6 +74,7 @@ function AutocompleteDirectionsHandler(map) {
     this.directionsDisplay = new google.maps.DirectionsRenderer;
     this.directionsDisplay.setMap(map);
     this.placeDetailsService = new google.maps.places.PlacesService(map);
+    this.geocoder = new google.maps.Geocoder();
 
     var me = this;
 
@@ -77,6 +84,16 @@ function AutocompleteDirectionsHandler(map) {
 
     var addButton = document.getElementById('add');
     var Pois = document.getElementById('POIs');
+
+    Pois.addEventListener("click", function(i){
+        if (i.target.className == "btns") {
+          if(confirm("are you sure!") === true){
+            const li = i.target.parentElement;
+            // console.log(i.target.parentElement);
+             Pois.removeChild(li);
+          }
+        }
+    });
 
     var originInput = document.getElementById('origin-input');
     var destinationInput = document.getElementById('destination-input');
@@ -92,7 +109,7 @@ function AutocompleteDirectionsHandler(map) {
     destinationAutocomplete.setFields(['place_id', 'name', 'geometry', 'icon']);
 
     var waypointsAutocomplete = new google.maps.places.Autocomplete(waypointsInput);
-    waypointsAutocomplete.setFields(['place_id', 'name', 'geometry', 'icon']);
+    waypointsAutocomplete.setFields([ 'place_id', 'name', 'geometry', 'icon']);
 
     this.setupClickListener('changemode-walking', 'WALKING');
     this.setupClickListener('changemode-transit', 'TRANSIT');
@@ -111,10 +128,20 @@ function AutocompleteDirectionsHandler(map) {
     addButton.addEventListener('click', function () {
         // window.alert('ADD button');
         //window.alert(me.waypointsName);
-        var li = document.createElement('li');
-        li.textContent = me.waypointPlace.name
+        const li   = document.createElement("li");
+        const name   = document.createElement("span");
+        const btn   = document.createElement("span");
+        name.textContent = me.waypointPlace.name;
+        btn.textContent = "Delete";
+        // add class name
+        name.classList.add("text") ;
+        btn.classList.add("btns") ;
+        // appends to  dom
+        li.appendChild(name);
+        li.appendChild(btn);
+        // li.textContent = me.waypointPlace.name
         // Pois.innerHTML = me.waypointsName;
-        li.setAttribute("id", "wp" + me.waypointPlace.place_id);
+        li.setAttribute("id", me.waypointPlace.place_id);
         Pois.appendChild(li);
         // save waypts information
         waypts.push({
@@ -137,7 +164,7 @@ function AutocompleteDirectionsHandler(map) {
 
         me.waypointMarker.setAnimation(null);
 
-        me.waypointMarker = new google.maps.Marker({
+        let currentMarker = new google.maps.Marker({
           map: map,
           position: me.waypointPlace.geometry.location,
           title: me.waypointPlace.name,
@@ -145,9 +172,42 @@ function AutocompleteDirectionsHandler(map) {
           label: 'WP',
           placeId: me.waypointPlace.place_id
         });
-        me.waypointMarkerList.push(me.waypointMarker);
+        console.log(currentMarker.placeId);
+        console.log(currentMarker.label);
 
-        me.waypointMarker = null;
+        // me.startMarker.addListener('dblclick', function (event) {
+        //   console.log(event.latLng.toJSON())
+        // });
+
+        currentMarker.addListener("dblclick", function(e) {
+          console.log(e);
+
+            if(confirm("are you sure!") === true){
+              var latlng = e.latLng.toJSON();
+              console.log(latlng);
+
+              me.geocoder.geocode({'location': latlng}, function(results, status) {
+                  if (status === 'OK') {
+                    if (results[0]) {
+                      let placeId = results[0].place_id;
+                      let li = document.getElementById(placeId);
+                      //https://stackoverflow.com/questions/5181006/javascript-document-removeelementbyid
+                      li.parentNode.removeChild(li);
+                    } else {
+                      window.alert('No results found');
+                    }
+                  } else {
+                    window.alert('Geocoder failed due to: ' + status);
+                  }
+                });
+            }
+
+        });
+
+        me.waypointMarkerList.push(currentMarker);
+        me.waypointMarker = currentMarker;
+
+        // me.waypointMarker = null;
         // me.waypointMarker
     });
 
@@ -212,13 +272,17 @@ AutocompleteDirectionsHandler.prototype.setupPlaceChangedListener = function (
             });
             me.startMarker.addListener('mouseover', function (event) {
               // test for event content
-              console.log(event)
+            //  console.log(event)
               if (me.startMarker.getAnimation() !== null) {
                 me.startMarker.setAnimation(null);
               } else {
                 me.startMarker.setAnimation(google.maps.Animation.BOUNCE);
               }
             });
+            // me.startMarker.addListener('dblclick', function (event) {
+            //   console.log(event.latLng.toJSON())
+            // });
+
 
         } else if (mode === 'DEST') {
             me.destinationPlace = place
@@ -325,7 +389,9 @@ AutocompleteDirectionsHandler.prototype.route = function () {
 
 };
 
-AutocompleteDirectionsHandler.prototype.addSingleMarker = function (place) {
+// refactor
+// 3 types: poi, start,
+AutocompleteDirectionsHandler.prototype.addSingleMarkerWithType = function (place, type) {
   let me = this;
   let map = me.map;
   let image = {
