@@ -19,7 +19,7 @@ function initMap() {
             lng: -77.0369
         },
         zoom: 13,
-        styles: myStyles
+        //styles: myStyles
 
 
     });
@@ -59,10 +59,16 @@ function AutocompleteDirectionsHandler(map) {
     this.startMarker = null;
     this.endMarker = null;
     this.waypointMarker = null;
+    this.waypointMarkerList = [];
+    this.waypointMarkerBounceListener = null;
+    this.WaypointMarkerSearchHistory = [];
+
     this.travelMode = 'WALKING';
     this.directionsService = new google.maps.DirectionsService;
     this.directionsDisplay = new google.maps.DirectionsRenderer;
     this.directionsDisplay.setMap(map);
+    this.placeDetailsService = new google.maps.places.PlacesService(map);
+
     var me = this;
 
     // console.log(map.getCenter().toString())
@@ -108,16 +114,18 @@ function AutocompleteDirectionsHandler(map) {
         var li = document.createElement('li');
         li.textContent = me.waypointPlace.name
         // Pois.innerHTML = me.waypointsName;
+        li.setAttribute("id", "wp" + me.waypointPlace.place_id);
         Pois.appendChild(li);
-
+        // save waypts information
         waypts.push({
             location: me.waypointPlace.geometry.location,
             stopover: true
         });
-
-        if (me.waypointMarker !== null) {
-          me.waypointMarker.setMap(null);
-        }
+        //
+        // if (me.waypointMarker !== null) {
+        //   me.waypointMarker.setMap(null);
+        //   me.waypointMarker = null;
+        // }
         let map = me.map;
         // let image = {
         //   url: "https://www.flaticon.com/authors/prettycons",
@@ -127,14 +135,20 @@ function AutocompleteDirectionsHandler(map) {
         //   scaledSize: new google.maps.Size(25, 25)
         // }
 
+        me.waypointMarker.setAnimation(null);
 
         me.waypointMarker = new google.maps.Marker({
           map: map,
-          position: place.geometry.location,
-          title: place.name,
+          position: me.waypointPlace.geometry.location,
+          title: me.waypointPlace.name,
           // icon: image
-          label: 'WP'
+          label: 'WP',
+          placeId: me.waypointPlace.place_id
         });
+        me.waypointMarkerList.push(me.waypointMarker);
+
+        me.waypointMarker = null;
+        // me.waypointMarker
     });
 
 }
@@ -150,6 +164,8 @@ AutocompleteDirectionsHandler.prototype.setupClickListener = function (
     radioButton.addEventListener('click', function () {
         me.travelMode = mode;
     });
+
+
 };
 
 
@@ -189,8 +205,19 @@ AutocompleteDirectionsHandler.prototype.setupPlaceChangedListener = function (
               map: map,
               position: place.geometry.location,
               title: place.name,
+              animation: google.maps.Animation.DROP,
               // icon: image
-              label: 'Start'
+              label: 'Start',
+              placeId: place.place_id
+            });
+            me.startMarker.addListener('mouseover', function (event) {
+              // test for event content
+              console.log(event)
+              if (me.startMarker.getAnimation() !== null) {
+                me.startMarker.setAnimation(null);
+              } else {
+                me.startMarker.setAnimation(google.maps.Animation.BOUNCE);
+              }
             });
 
         } else if (mode === 'DEST') {
@@ -215,16 +242,32 @@ AutocompleteDirectionsHandler.prototype.setupPlaceChangedListener = function (
               map: map,
               position: place.geometry.location,
               title: place.name,
+              animation: google.maps.Animation.BOUNCE,
               // icon: image
-              label: 'DEST'
+              label: 'DEST',
+              placeId: place.place_id
+            });
+
+            me.endMarker.addListener('mouseover', function (event) {
+              // test for event content
+              // console.log(event)
+              if (me.endMarker.getAnimation() !== null) {
+                me.endMarker.setAnimation(null);
+              } else {
+                me.endMarker.setAnimation(google.maps.Animation.BOUNCE);
+              }
+
             });
 
 
-        } else {
+        } else { // show current selected POI
+            // if (me.waypointPlace !== null) { // current way point
+            //
+            // }
+            //me.waypointMarker.setAnimation(null);
             me.waypointPlace = place;
             me.addSingleMarker(me.waypointPlace);
 
-            me.addSingleMarker(place);
 
             /*
             window.alert(me.waypointsPlaceId);
@@ -297,18 +340,39 @@ AutocompleteDirectionsHandler.prototype.addSingleMarker = function (place) {
     map: map,
     position: place.geometry.location,
     title: place.name,
-    icon: image
+    animation: google.maps.Animation.BOUNCE,
+    icon: image,
+    placeId: place.place_id
   });
 
-  var infowindow = new google.maps.InfoWindow();
 
-  google.maps.event.addListener(marker, 'click', function() {
+
+  marker.addListener('click', function() {
+      let infowindow = new google.maps.InfoWindow();
       infowindow.setContent(place.name + '\n' + marker.position);
       // current_selected = marker.position;
 
       infowindow.open(map, this);
   });
+  me.WaypointMarkerSearchHistory.push(marker);
+  me.waypointMarker = marker;
 
-  bounds.extend(place.geometry.location);
+  marker.addListener('mouseover', function() {
+    // test for event content
+    // console.log(event)
+    marker.setAnimation(null);
+  });
+
+  marker.addListener('mouseout', function() {
+    marker.setAnimation(google.maps.Animation.BOUNCE);
+  });
+
+  marker.addListener('rightclick', function() {
+    confirm("Press a button");
+  });
+
+
+
+  me.bounds.extend(place.geometry.location);
   // map.fitBounds(bounds);
 }
