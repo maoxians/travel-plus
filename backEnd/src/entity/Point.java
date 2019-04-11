@@ -45,7 +45,7 @@ public class Point {
 	public double getVisitFreq() {
 		return visitFreq;
 	}
-	public double getOrderInRoute() {
+	public int getOrderInRoute() {
 		return orderInRoute;
 	}
 
