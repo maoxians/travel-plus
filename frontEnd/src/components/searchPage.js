@@ -1,5 +1,9 @@
 var waypts = [];
 var map;
+var nearbyList = [];
+var waypointMarkerList = [];
+
+var searchedMarkerList = [];
 function initMap() {
 
   var myStyles =[
@@ -109,7 +113,7 @@ function AutocompleteDirectionsHandler(map) {
     destinationAutocomplete.setFields(['place_id', 'name', 'geometry', 'icon']);
 
     var waypointsAutocomplete = new google.maps.places.Autocomplete(waypointsInput);
-    waypointsAutocomplete.setFields([ 'place_id', 'name', 'geometry', 'icon']);
+    waypointsAutocomplete.setFields(['place_id', 'name', 'geometry', 'icon']);
 
     this.setupClickListener('changemode-walking', 'WALKING');
     this.setupClickListener('changemode-transit', 'TRANSIT');
@@ -211,6 +215,8 @@ function AutocompleteDirectionsHandler(map) {
         // me.waypointMarker
     });
 
+
+
 }
 
 // Sets a listener on a ADD button to add pois.
@@ -246,42 +252,14 @@ AutocompleteDirectionsHandler.prototype.setupPlaceChangedListener = function (
             return;
         }
         if (mode === 'ORIG') {
+            // reset start by autocomplete
             me.originPlace = place;
             originP.innerHTML = place.name;
             if (me.startMarker !== null) {
               me.startMarker.setMap(null);
             }
-            let map = me.map;
-            // let image = {
-            //   url: "https://www.flaticon.com/authors/prettycons",
-            //   size: new google.maps.Size(71, 71),
-            //   origin: new google.maps.Point(0, 0),
-            //   anchor: new google.maps.Point(17, 34),
-            //   scaledSize: new google.maps.Size(25, 25)
-            // }
-
-
-            me.startMarker = new google.maps.Marker({
-              map: map,
-              position: place.geometry.location,
-              title: place.name,
-              animation: google.maps.Animation.DROP,
-              // icon: image
-              label: 'Start',
-              placeId: place.place_id
-            });
-            me.startMarker.addListener('mouseover', function (event) {
-              // test for event content
-            //  console.log(event)
-              if (me.startMarker.getAnimation() !== null) {
-                me.startMarker.setAnimation(null);
-              } else {
-                me.startMarker.setAnimation(google.maps.Animation.BOUNCE);
-              }
-            });
-            // me.startMarker.addListener('dblclick', function (event) {
-            //   console.log(event.latLng.toJSON())
-            // });
+            // 簡化邏輯
+            me.addSingleMarkerWithType(place, mode);
 
 
         } else if (mode === 'DEST') {
@@ -292,36 +270,8 @@ AutocompleteDirectionsHandler.prototype.setupPlaceChangedListener = function (
             if (me.endMarker !== null) {
               me.endMarker.setMap(null);
             }
-            let map = me.map;
-            // let image = {
-            //   url: "https://www.flaticon.com/authors/prettycons",
-            //   size: new google.maps.Size(71, 71),
-            //   origin: new google.maps.Point(0, 0),
-            //   anchor: new google.maps.Point(17, 34),
-            //   scaledSize: new google.maps.Size(25, 25)
-            // }
+            me.addSingleMarkerWithType(place, mode);
 
-
-            me.endMarker = new google.maps.Marker({
-              map: map,
-              position: place.geometry.location,
-              title: place.name,
-              animation: google.maps.Animation.BOUNCE,
-              // icon: image
-              label: 'DEST',
-              placeId: place.place_id
-            });
-
-            me.endMarker.addListener('mouseover', function (event) {
-              // test for event content
-              // console.log(event)
-              if (me.endMarker.getAnimation() !== null) {
-                me.endMarker.setAnimation(null);
-              } else {
-                me.endMarker.setAnimation(google.maps.Animation.BOUNCE);
-              }
-
-            });
 
 
         } else { // show current selected POI
@@ -330,7 +280,7 @@ AutocompleteDirectionsHandler.prototype.setupPlaceChangedListener = function (
             // }
             //me.waypointMarker.setAnimation(null);
             me.waypointPlace = place;
-            me.addSingleMarker(me.waypointPlace);
+            me.addSingleMarkerWithType(place, "SEARCHED");
 
 
             /*
@@ -389,8 +339,40 @@ AutocompleteDirectionsHandler.prototype.route = function () {
 
 };
 
-// refactor
-// 3 types: poi, start,
+
+// 5 types
+// 1. ORIG
+//  1.1 start Marker
+//  1.2 mouseover BOUNCE
+//  1.3 mouseout NONE
+//  1.4 click show InfoWindow
+//  1.5 rightclick remove start // set start marker null// startPlace null ==>
+//
+// 2. DEST
+// 2.1 end Marker
+// 2.2 mouseover BOUNCE
+// 2.3 mouseout NON
+// 2.4 click show infowindow
+// 2.5 rightclick remove end // set end marker null// endPlace null
+
+// 3. NEARBY
+//  3.1 image
+//  3.2 drop
+//  3.3 click infoWindow
+//  3.4 rightclick remove start
+//  3.5 dblclick set as WAYPOINT
+// 4. SEARCHED
+//  4.1 image
+//  4.2 BOUNCE
+//  4.3 click infoWindow
+//  4.4 dblclick
+// 5. WAYPOINT
+//  5.1 waypoint marker
+//  5.2 click infoWindow
+//  5.3
+//  5.4 rightclick set as searched
+//  5.5
+
 AutocompleteDirectionsHandler.prototype.addSingleMarkerWithType = function (place, type) {
   let me = this;
   let map = me.map;
@@ -401,44 +383,200 @@ AutocompleteDirectionsHandler.prototype.addSingleMarkerWithType = function (plac
     anchor: new google.maps.Point(17, 34),
     scaledSize: new google.maps.Size(25, 25)
   }
-
   let marker = new google.maps.Marker({
     map: map,
     position: place.geometry.location,
     title: place.name,
-    animation: google.maps.Animation.BOUNCE,
-    icon: image,
-    placeId: place.place_id
+    // animation: google.maps.Animation.BOUNCE,
+    // icon: image,
+    placeId: place.place_id // 给marker 一个unique identifier
   });
-
-
-
   marker.addListener('click', function() {
       let infowindow = new google.maps.InfoWindow();
       infowindow.setContent(place.name + '\n' + marker.position);
       // current_selected = marker.position;
-
       infowindow.open(map, this);
   });
-  me.WaypointMarkerSearchHistory.push(marker);
-  me.waypointMarker = marker;
+  if (type === 'ORIG') {
+    // 1.1 or a differnt marker icon
+    marker.setLabel('Start');
+    // TODO
+    // marker.setIcon();
+    // 1.2 BOUNCE
+    marker.setAnimation(google.maps.Animation.BOUNCE);
+    // 1.3 mouseover
+    me.addMouseOverListener(marker);
+    // 1.4 no need for mouseout
+    // 1.5 remove start label
+    me.addRightClickListenerRemoveOnOrign(marker, place);
+    // 1.0 set new place and new marker
+    me.originPlace = place;
+    me.startMarker = marker;
+  } else if (type === 'DEST') {
+    marker.setLabel('End');
+    marker.setAnimation(google.maps.Animation.BOUNCE);
+    me.addMouseOverListener(marker);
+    me.addRightClickListenerRemoveOnDest(marker, place);
+    me.destinationPlace = place;
+    me.endMarker = marker;
+  } else if (type === 'NEARBY') {
+    marker.setIcon(image);
 
-  marker.addListener('mouseover', function() {
+
+
+  } else if (type === 'SEARCHED') {
+    marker.setIcon(image);
+    marker.setAnimation(google.maps.Animation.DROP);
+    me.addDoubleClickListenerAddOnWaypoints(marker, place);
+
+  } else { // type === 'SELECTED'
+
+  }
+  return marker;
+}
+
+AutocompleteDirectionsHandler.prototype.addMouseOverListener = function (marker) {
+  marker.addListener('mouseover', function () {
     // test for event content
     // console.log(event)
-    marker.setAnimation(null);
+    if (marker.getAnimation() !== null) {
+      marker.setAnimation(null);
+    } else {
+      marker.setAnimation(google.maps.Animation.BOUNCE);
+    }
   });
-
-  marker.addListener('mouseout', function() {
-    marker.setAnimation(google.maps.Animation.BOUNCE);
-  });
-
-  marker.addListener('rightclick', function() {
-    confirm("Press a button");
-  });
-
-
-
-  me.bounds.extend(place.geometry.location);
-  // map.fitBounds(bounds);
 }
+
+AutocompleteDirectionsHandler.prototype.addRightClickListenerRemoveOnOrign = function(marker, place) {
+  let me = this;
+  let placeId = place.place_id;
+  console.log(placeId);
+  marker.addListener("rightclick", function(e) {
+      if(confirm("Are you sure to delete start point?") === true){
+        let originP = document.getElementById('SP');
+        originP.innerHTML = "TBD";
+        me.startMarker.setMap(null);
+        me.startMarker = null;
+        me.originPlace = null;
+        // routeSegment
+        let newSearchedMarker = me.addSingleMarkerWithType(place, "SEARCHED");
+        searchedMarkerList.push(newSearchedMarker);
+      }
+  });
+}
+
+AutocompleteDirectionsHandler.prototype.addRightClickListenerRemoveOnDest = function(marker, place) {
+  let me = this;
+  let placeId = place.place_id;
+  console.log(placeId);
+  marker.addListener("rightclick", function(e) {
+    if(confirm("Are you sure to delete end point?") === true){
+      var destinationP = document.getElementById('EP');
+      destinationP.innerHTML = "TBD";
+      me.endMarker.setMap(null);
+      me.endMarker = null;
+      //
+      let newSearchedMarker = me.addSingleMarkerWithType(place, "SEARCHED");
+      // change to me.
+      searchedMarkerList.push(newSearchedMarker);
+    }
+  });
+}
+
+AutocompleteDirectionsHandler.prototype.doubleClickSetSearchedIntoWaypoint = function(marker, place) {
+  let me = this;
+  let placeId = place.place_id;
+  console.log(placeId);
+  marker.addListener("dblclick", function(e) {
+    if(confirm("Are you sure to select it as POI?") === true){
+      var Pois = document.getElementById('POIs');
+      const li   = document.createElement("li");
+      const name   = document.createElement("span");
+      const btn   = document.createElement("span");
+      name.textContent = me.waypointPlace.name;
+      btn.textContent = "Delete";
+      // add class name
+      name.classList.add("text") ;
+      btn.classList.add("btns") ;
+      // appends to  dom
+      li.appendChild(name);
+      li.appendChild(btn);
+      // li.textContent = me.waypointPlace.name
+      // Pois.innerHTML = me.waypointsName;
+      li.setAttribute("id", place.place_id);
+      Pois.appendChild(li);
+      // save waypts information
+      waypts.push({
+          location: me.waypointPlace.geometry.location,
+          stopover: true
+      });
+      console.log(this);
+
+
+
+      // //
+      // let newSearchedMarker = me.addSingleMarkerWithType(place, "WAYPOINT");
+      // // change to me.
+      // searchedMarkerList.push(newSearchedMarker);
+    }
+  });
+
+}
+
+AutocompleteDirectionsHandler.prototype.removeMarkerFromSearched = function(marker, place) {
+
+
+}
+
+
+
+
+// me.originPlace = place;
+// originP.innerHTML = place.name;
+// if (me.startMarker !== null) {
+//   me.startMarker.setMap(null);
+// }
+
+//
+// marker.addListener("rightclick", function(e) {
+//     // console.log(e);
+//     if(confirm("Are you sure to delete start point?") === true){
+//       var latlng = e.latLng.toJSON();
+//       // console.log(latlng);
+//
+//       me.geocoder.geocode({'location': latlng}, function(results, status) {
+//           if (status === 'OK') {
+//             if (results[0]) {
+//               // 小黑改一下这的逻辑，把start point 改一下
+//               // let placeId = results[0].place_id;
+//
+//               // 顺便看看能不能清空 autocomplete框里面的东西
+//
+//               // step2 删除这个point，然后重新生成，searched
+//
+//               addSingleMarkerWithType
+//
+//
+//             } else {
+//               window.alert('No results found');
+//             }
+//           } else {
+//             window.alert('Geocoder failed due to: ' + status);
+//           }
+//         });
+//     }
+// });
+//
+//
+// function attachPlaceWithMarker(marker, place) {
+//   marker.addListener('mouseover', function (event) {
+//     // test for event content
+//     // console.log(event)
+//     if (marker.getAnimation() !== null) {
+//       marker.setAnimation(null);
+//     } else {
+//       marker.setAnimation(google.maps.Animation.BOUNCE);
+//     }
+//     // console.log(place);
+//   });
+// }
