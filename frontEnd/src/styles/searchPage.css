@@ -196,3 +196,17 @@ ul{
     background: red;
     color: #fff;
 }
+
+#location-filter {
+  color: #fff;
+  background-color:#1cbf92
+;
+  margin-left: 12px;
+  padding: 5px 11px 0px 11px;
+}
+
+#location-filter label {
+  font-family: Roboto;
+  font-size: 13px;
+  font-weight: 300;
+}
