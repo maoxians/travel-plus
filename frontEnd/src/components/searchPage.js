@@ -11,6 +11,7 @@ var typeMap = new Map();
 for (let i = 0; i < SEARCH_TYPE.length; i++) {
   typeMap.set(SEARCH_TYPE[i], CATEGORY[i + 4]);
 }
+var routeResponse = null;
 
 var waypts = [];
 var map;
@@ -243,8 +244,9 @@ AutocompleteDirectionsHandler.prototype.route = function () {
               // me.startMarker = null;
               // me.endMarker.setMap(null);
               // me.endMarker = null;
-
+              routeResponse = response; //
                 me.directionsDisplay.setDirections(response);
+                console.log(response);
                 var route = response.routes[0];
                 var summaryPanel = document.getElementById('directions-panel');
                 summaryPanel.innerHTML = '';
@@ -525,7 +527,6 @@ AutocompleteDirectionsHandler.prototype.addRClickListnerToRemoveOrig = function 
         me.originPlace = null;
         me.switchMarkerType(this, "POI");
       }
-
   });
 }
 
