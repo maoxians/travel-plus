@@ -5,11 +5,13 @@
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
     <meta charset="utf-8">
     <title>searchPage</title>
+    <!-- <link rel="shortcut icon" href=""> -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+
     <style>
         @import "styles/searchPage.css";
     </style>
 </head>
-
 <body>
     <div id="floating-panel">
         <div style="display: none">
@@ -27,8 +29,28 @@
                 <input type="radio" name="type" id="changemode-driving">
                 <label for="changemode-driving">Driving</label>
             </div>
+            <div id="location-filter" class="controls">
+              <input type="checkbox" name="type" id="filter-nbapark" class="filter" value="amusement_park">
+              <label for="filter-nbapark">AMUSEMENT PARK</label>
+
+              <input type="checkbox" name="type" id="filter-nbaquarium" class="filter" value="aquarium">
+              <label for="filter-nbaquarium">AQUARIUM</label>
+
+              <input type="checkbox" name="type" id="filter-nbartgallery" class="filter" value="art_gallery">
+              <label for="filter-nbartgallery">ART GALLARY</label>
+
+              <input type="checkbox" name="type" id="filter-nbmuseum" class="filter" value="muesum">
+              <label for="filter-nbmuseum">MUSEUM</label>
+
+              <input type="checkbox" name="type" id="filter-nbpark" class="filter" value="park">
+              <label for="filter-nbpark">PARK</label>
+
+              <input type="checkbox" name="type" id="filter-nbzoo" class="filter" value="zoo">
+              <label for="filter-nbzoo">ZOO</label>
+          </div>
         </div>
     </div>
+    <!-- const CATEGORY = ["ORIG", "DEST", "SEARCHED", "POI", "NBAPARK", "NBAQUARIUM", "NBARTGALLERY", "NBMUSEUM", "NBPARK", "NBZOO"]; -->
 
     <div id="right-panel">
         <div stype="display: none">
@@ -39,13 +61,16 @@
             <input id="add" type="button" value="ADD">
             <div id="list-panel">
               <h2>Way Points</h2>
-              <ul id = "POIs" type = "Disc"></ul>
+              <ul id = "POIs" type = "Disc">
+
+              </ul>
             </div>
 
-            <br> 
+            <br>
             <b>End Point:</b>
             <p id = "EP"></p>
             <input type="submit" id="submit">
+            <input id="Save" type="button" value ="Save Route" onclick = "SaveData()">
         </div>
         <div id="directions-panel">Suggestted Routes</div>
     </div>
