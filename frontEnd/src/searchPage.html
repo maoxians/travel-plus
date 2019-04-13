@@ -5,13 +5,13 @@
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
     <meta charset="utf-8">
     <title>searchPage</title>
-    <link rel="shortcut icon" href="">
+    <!-- <link rel="shortcut icon" href=""> -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
 
     <style>
         @import "styles/searchPage.css";
     </style>
 </head>
-
 <body>
     <div id="floating-panel">
         <div style="display: none">
@@ -30,29 +30,27 @@
                 <label for="changemode-driving">Driving</label>
             </div>
             <div id="location-filter" class="controls">
-              <input type="checkbox" name="type" id="filter-all" checked="checked">
-              <label for="filter-all">ALL</label>
-
               <input type="checkbox" name="type" id="filter-nbapark">
-              <label for="filter-nbapark">NBAPARK</label>
+              <label for="filter-nbapark">AMUSEMENT PARK</label>
 
               <input type="checkbox" name="type" id="filter-nbaquarium">
-              <label for="filter-nbaquarium">NBAQUARIUM</label>
+              <label for="filter-nbaquarium">AQUARIUM</label>
 
               <input type="checkbox" name="type" id="filter-nbartgallery">
-              <label for="filter-nbartgallery">NBARTGALLERY</label>
+              <label for="filter-nbartgallery">ART GALLARY</label>
 
               <input type="checkbox" name="type" id="filter-nbmuseum">
-              <label for="filter-nbmuseum">NBMUSEUM</label>
+              <label for="filter-nbmuseum">MUSEUM</label>
 
               <input type="checkbox" name="type" id="filter-nbpark">
-              <label for="filter-nbpark">NBPARK</label>
+              <label for="filter-nbpark">PARK</label>
 
               <input type="checkbox" name="type" id="filter-nbzoo">
-              <label for="filter-nbzoo">NBZOO</label>
+              <label for="filter-nbzoo">ZOO</label>
           </div>
         </div>
     </div>
+    <!-- const CATEGORY = ["ORIG", "DEST", "SEARCHED", "POI", "NBAPARK", "NBAQUARIUM", "NBARTGALLERY", "NBMUSEUM", "NBPARK", "NBZOO"]; -->
 
     <div id="right-panel">
         <div stype="display: none">
@@ -64,9 +62,9 @@
             <div id="list-panel">
               <h2>Way Points</h2>
               <ul id = "POIs" type = "Disc">
-                <li id="fakeid">
+                <li id="fakeid" class="poi">
                   <span class="text">Danis</span>
-                  <span class="btns">Delete</span>
+                  <span class="btns"><i class="fa fa-trash" aria-hidden="true"></i></span>
                 </li>
               </ul>
             </div>

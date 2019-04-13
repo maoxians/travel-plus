@@ -6,6 +6,11 @@ const CATEGORY = ["ORIG", "DEST", "SEARCHED", "POI", "NBAPARK", "NBAQUARIUM", "N
 for (let cat of CATEGORY) {
   categoryMap.set(cat, new Map());
 }
+const SEARCH_TYPE = ['amusement_park', 'aquarium', 'art_gallery', 'museum', 'park', 'zoo'];
+var typeMap = new Map();
+for (let i = 0; i < SEARCH_TYPE.length; i++) {
+  typeMap.set(SEARCH_TYPE[i], CATEGORY[i + 4]);
+}
 
 var waypts = [];
 var map;
@@ -62,7 +67,6 @@ function initMap() {
     //   position: map.getCenter(),
     //   title: "hello world"
     // });
-
 
     new AutocompleteDirectionsHandler(map);
 }
@@ -366,6 +370,8 @@ AutocompleteDirectionsHandler.prototype.createMarker = function (place, type) {
     marker.prevType = type;
     me.setUnselectedMarkerFeature(marker);
   }
+  me.bounds.extend(place.geometry.location);
+  // me.map.fitBounds(me.bounds);
   // test
   me.mapSizeShowInfo();
   return marker;
@@ -495,7 +501,7 @@ AutocompleteDirectionsHandler.prototype.addRClickListnerToRemoveOrig = function 
         // me.startMarker.setMap(null);
         me.startMarker = null;
         me.originPlace = null;
-        me.switchMarkerType(this, "SEARCHED");
+        me.switchMarkerType(this, "POI");
       }
 
   });
@@ -618,4 +624,27 @@ AutocompleteDirectionsHandler.prototype.getwaypts = function () {
     });
   }
   return res;
+}
+
+AutocompleteDirectionsHandler.prototype.clearMarkerWithType = function (type) {
+  let typeMap = categoryMap.get(typeMap.get(type));
+  for (let i of typeMap.values()) {
+    i.setMap(null);
+  }
+  typeMap.clear();
+}
+
+AutocompleteDirectionsHandler.prototype.nearbyWithType = function (searchType) {
+  var request = {
+    bounds: map.getBounds(),
+    type: [searchType]
+  }
+  me.placeDetailsService.nearBySearch(request, function(result, status) {
+    if (status == google.maps.places.PlacesServiceStatus.OK) {
+      for (let i = 0; i < results.length; i++) {
+        var pace = results[i];
+        addSingleMarkerWithType(results[i], typeMap.get(searchType));
+      }
+    }
+  });
 }
