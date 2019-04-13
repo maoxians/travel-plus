@@ -121,6 +121,22 @@ function AutocompleteDirectionsHandler(map) {
         }
     });
 
+    var nearbyFilter = document.querySelectorAll(".filter");
+    console.log(nearbyFilter);
+    nearbyFilter.forEach(function(item) {
+      item.addEventListener('change', function() {
+        if (this.checked) {
+          console.log('check');
+          me.nearbyWithType(this.value);
+          me.mapSizeShowInfo();
+        } else {
+          console.log('uncheck');
+          me.clearMarkerWithType(this.value);
+          me.mapSizeShowInfo();
+        }
+      });
+    });
+
     var originInput = document.getElementById('origin-input');
     var destinationInput = document.getElementById('destination-input');
     var waypointsInput = document.getElementById('waypoints-input');
@@ -420,17 +436,23 @@ AutocompleteDirectionsHandler.prototype.setPoiMarkerFeature = function (marker) 
   const li   = document.createElement("li");
   const name   = document.createElement("span");
   const btn   = document.createElement("span");
+  const btnIcon = document.createElement("i");
   name.textContent = place.name;
-  btn.textContent = "Delete";
+  // btn.textContent = "Delete";
   // add class name
   name.classList.add("text") ;
   btn.classList.add("btns") ;
+  btnIcon.classList.add("fa");
+  btnIcon.classList.add("fa-trash");
+  btnIcon.setAttribute("aria-hidden", "true");
   // appends to  dom
+  btn.appendChild(btnIcon);
   li.appendChild(name);
   li.appendChild(btn);
   // li.textContent = me.waypointPlace.name
   // Pois.innerHTML = me.waypointsName;
   li.setAttribute("id", place.place_id);
+  li.classList.add("poi");
   Pois.appendChild(li);
   // save waypts information
   // TODO: get this by category map
@@ -617,7 +639,7 @@ AutocompleteDirectionsHandler.prototype.mapSizeShowInfo = function () {
 
 AutocompleteDirectionsHandler.prototype.getwaypts = function () {
   let res = [];
-  for (let i of category.get("POI").values()) {
+  for (let i of categoryMap.get("POI").values()) {
     res.push({
       location: i.placeDetail.geometry.location,
       stopover: true
@@ -627,23 +649,25 @@ AutocompleteDirectionsHandler.prototype.getwaypts = function () {
 }
 
 AutocompleteDirectionsHandler.prototype.clearMarkerWithType = function (type) {
-  let typeMap = categoryMap.get(typeMap.get(type));
-  for (let i of typeMap.values()) {
-    i.setMap(null);
+  let markers = categoryMap.get(typeMap.get(type));
+  for (let i of markers.entries()) {
+    markerMap.delete(i[0]);
+    i[1].setMap(null);
   }
-  typeMap.clear();
+  markers.clear();
 }
 
 AutocompleteDirectionsHandler.prototype.nearbyWithType = function (searchType) {
+  let me = this;
   var request = {
     bounds: map.getBounds(),
     type: [searchType]
   }
-  me.placeDetailsService.nearBySearch(request, function(result, status) {
-    if (status == google.maps.places.PlacesServiceStatus.OK) {
+  me.placeDetailsService.nearbySearch(request, function(results, status) {
+    if (status === google.maps.places.PlacesServiceStatus.OK) {
       for (let i = 0; i < results.length; i++) {
-        var pace = results[i];
-        addSingleMarkerWithType(results[i], typeMap.get(searchType));
+        var place = results[i];
+        me.addSingleMarkerWithType(results[i], typeMap.get(searchType));
       }
     }
   });
