@@ -67,7 +67,7 @@ body {
 
 #right-panel {
     font-family: 'Roboto', 'sans-serif';
-    line-height: 30px;
+    line-height: 20px;
     padding-left: 10px;
 }
 
@@ -86,9 +86,9 @@ body {
 #directions-panel {
     margin-top: 10px;
     background-color: #1cbf92;
-    padding: 10px;
+    padding: 10px 10px;
     overflow: scroll;
-    height: 500px;
+    height: 200px;
 
 }
 
